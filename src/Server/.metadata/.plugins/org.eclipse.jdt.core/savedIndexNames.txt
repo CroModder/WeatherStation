@@ -1,0 +1,25 @@
+INDEX VERSION 1.127+D:\Obrazovanje\Telematika\VI_semestar\Softwareprojekt\Dev\Server\.metadata\.plugins\org.eclipse.jdt.core
+4182467125.index
+1768317025.index
+2097543236.index
+798836303.index
+1818873502.index
+2254461003.index
+2461411560.index
+3060984396.index
+1591257592.index
+2556109322.index
+4206875510.index
+2131649118.index
+3571247027.index
+3659163755.index
+848798113.index
+460464283.index
+2247402208.index
+1384569773.index
+3498770828.index
+99360274.index
+2352543979.index
+1724245025.index
+450602042.index
+779407479.index

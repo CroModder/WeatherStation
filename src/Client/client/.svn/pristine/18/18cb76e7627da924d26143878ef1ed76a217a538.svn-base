@@ -1,0 +1,172 @@
+############### Language ###############
+txtSelectLanguage = Izaberite \u017Eeljeni jezik iz liste ponu\u0111enih
+btnCancel = Prekid
+
+############### Register ###############
+registerTitle = Registracija
+btnRegister = Registracija
+lblExampleEmail = Primjer: primjer@th-wildau.de
+lblReg1 = Molimo unesite korisni\u010Dko ime, lozinku i e-mail adresu
+txtRePassword = Ponovite lozinku
+txtEmail = E-mail
+alertTitleRegister = Registracija
+alertContentRegister1 = Hvala
+alertContentRegister2 = za Va\u0161u registraciju. \nSada se mo\u017Eete prijaviti.
+errorNull = Jedna ili obje lozinke su null
+errorEmptyFields = Molimo ispunite sva potrebna polja
+errorPasswordShort = Lozinka se mora sastojati od barem 4 znaka
+errorPasswordNotMatch = Lozinke nisu iste
+
+############### Log in ###############
+btnRegisterNow = Registriraj se
+txtUserName = Korisni\u010Dko ime
+txtPassword = Lozinka
+btnLogin = Prijava
+menuBtnAdmin = Administrator
+menuBtnUser = Korisnik
+lblRegTxt=Niste se jo\u0161 registrirali? \u0160to \u010Dekate...
+errorEmpty = Molimo unesite va\u0161e korisni\u010Dko ime i lozinku
+errorIncorrect = Korisni\u010Dko ime ili lozinka nisu ispravni
+lblForgotPasswd = Zaboravili ste lozinku?
+
+############### E-mail verification ###############
+stageTitleVerification = E-mail potvrda
+txtEmail = E-mail
+btnEmailCheck = Provjeri
+txtPin = PIN
+btnOk = OK
+btnCancel = Prekid
+lblTitleText = Kod za promjenu lozinke na va\u0161em e-mailu
+sendPinWrongEmail = Molimo unesite e-mail u polje!
+sendPinCorrect = E-mail postoji! PIN kod je poslan na va\u0161u adresu.
+emailSubject = Kod za promjenu lozinke
+emailText = Kod za promjenu va\u0161e lozinke je:
+titleAlert = Gre\u0161ka
+emailAdressWrong = Molimo unesite ispravnu e-mail adresu!
+pinCodeCorrect = PIN kod je to\u010Dan!  Sada mo\u017Eete promijenit va\u0161u lozinku
+pinCodeInCorrect = Uneseni PIN je neto\u010Dan!
+noPinCode = Molimo vas unesite to\u010Dan PIN u polje!
+noEmailAdress = Molimo vas unesite e-mail u polje!
+stageTitlePassword = Postavi novu lozinku
+
+############### Password change ###############
+txtPassword = Nova lozinka
+txtRetype = Ponovite lozinku
+lblTitle = Izmjenite lozinku svoga ra\u010Duna
+alertTitle = Gre\u0161ka
+nullText = Molimo vas popunite sva polja
+txtPasswordShort = Lozinka je pre kratka. Mora sadr\u017Eavati najmanje 4 znaka
+alertTitleSuccess = Uspijeh
+passwordSuccess = Izmjena lozinke uspije\u0161na!
+passwordMatch = Lozinke nisu jednake
+
+############### Home ###############
+btnConnect = Spajanje
+btnHistorical = Povijesno
+btnLanguage = Jezik
+options = Postavke
+help = Pomo\u0107
+logOut = Odjava
+userSettings = Korisni\u010Dke postavke
+
+############### Main panel ###############
+exit = Izlaz
+newRecord = Novo snimanje
+edit = Uredi
+addWs = Nova Meteorolo\u0161ka stanica
+editWs = Ure\u0111ivanje Meteorolo\u0161ke stanice
+
+############### User settings ###############
+lblUserPane = Uredite postoje\u0107eg ili izbri\u0161ite odabranog korisnika
+columnName = Naziv
+columnDate = Zadnja prijava
+columnRole = Uloga
+columnDelete = Obri\u0161i
+save = Spremi
+userAdmin = Korisnik/Admin
+delAction = Akcija brisanja
+deleteQ = Jeste li sigurni da \u017Eelite izvr\u0161iti ovu akciju?
+yes = Da
+no = Ne
+warning = Oprez
+input = Unos
+selection = Izbor
+selectUserFromTable = Molimo izaberite jednog korisnika iz tablice!
+maxChar = Korisni\u010Dko ime ne smije sadr\u017Eavati vi\u0161e od 20 znakova \n une\u0161eno korisni\u010Dko ime ima
+errorSaving = Gre\u0161ka prilikom spremanja promjena!
+editUser = Ure\u0111vanje korisnika
+editUserSucces = Uspje\u0161no ure\u0161ivanje korisnika!
+
+############### Historical ###############
+lblBeginDate = Po\u010Detak:
+lblEndDate = Kraj:
+Temperature = Temperatura
+AirPressure = Tlak zraka
+MagneticField = Magnetizam
+Movement = Gibanje
+Show = Prika\u017Ei
+WeatherStation = Meteorolo\u0161ka stanica
+HectoPascal = Hektopaskal
+days = dan/a
+errorNoBeginDate = Po\u010Detni datum nije unesen
+selectBeginDate = Molimo izaberite po\u010Detni datum!
+errorNoEndDate = Krajnji datum nije unesen
+selectEndDate = Molimo izaberite krajnji datum!
+noData = Nema podataka
+noDataForWs = Za izabranu stanicu nema podataka!
+
+############### New weather station ###############
+titleText = Dodajte novu meteorolo\u0161ku stanicu za upotrebu.
+ipAdressFormat = Molimo vas napi\u0161ite IP adresu to\u010Dnog formata\n Primjer: 192.168.1.50
+WsExists = Naziv meteorolo\u0161ke stanice postoji!
+portNumber = Molimo vas upi\u0161ite to\u010Dan port
+newWSAdd = Uspije\u0161no dodana nova meteorolo\u0161ka stanica
+IpaddressLbl = IP adresa:
+NewWslbl = Nova Ms:
+Portlbl = Port:
+btnAdd = Dodaj
+
+############### Edit weather station ###############
+titleTextEdit = Uredite postoje\u0107e ili obri\u0161ite odabrane meteorolo\u0161ke stanice.
+confirmation = Jeste li sigurni da \u017Eelite izvr\u0161it ovu akciju?
+errorWsNamelenght = Naziv meteorolo\u0161ke stanice om\u017Ee imati maksimum 20 znakova\n uneseno ime ima
+erroNameOrIpEdit = Molimo vas unesite drugo ime ili IP adresu!
+EditWSAdd = Meteorolo\u0161ka stanica uspije\u0161no izmijenjena!
+ipColumn = IP adresa:
+lblEditWsName = Ws naziv:
+lblEditFreq = Frek. realnog vremena:
+btnEditSave = Spremi
+
+############### Recording ###############
+recordingTitle = Meteorolo\u0161ka stanica \u0107e direktno spremiti snimljene podatke u bazu podataka.
+errorRecordingSelect = Odabir meteorolo\u0161ke stanice
+errorRecordingTextSelect = Molimo vas odaberite \u017Eeljenu meteorolo\u0161ku stanicu iz izbornika!
+warningRecordingTitle = Odabir meteorolo\u0161ke stanice
+warningRecordingText =  je ve\u0107 dodana u parametre snimanja. Molimo vas odaberite drugu meteorolo\u0161ku stanicu.
+warningSelectSensorsTitle = Odabir senzora
+wariningSelectSensorText = Molimo odaberite \u017Eeljeni senzor za snimanje!
+warningClearTitle = Brisanje odabira
+warningClearText = Molimo vas odaberite jedan element iz tablice!
+treeTableName = Ure\u0111aji za snimanje
+lblRecordBegin = Po\u010Detak:
+lblrecordEnd = Kraj:
+checkAirRecord = Tlak zraka
+checkMagRecord = Magnetizam
+checkMovRecord = Gibanje
+checkTempRecord = Temepratura
+btnAddCheckRecord = Dodaj izbor
+btnClearRecord = Biranje izbora
+radioHoursRecord = Sati
+radioMinutesRecord = Minute
+
+############### DB ###############
+userExists = Korisnik postoji!
+newWsError = Gre\u0161ka kod nove Meteorolo\u0161ke stanice
+nameOrIpExists = Naziv ili IP ure\u0111aja postoji
+editWsError = Gre\u0161ka kod ure\u0111ivanja Meteorolo\u0161ke stanice
+editUserError = Gre\u0161ka prilikom ure\u0111ivanja korisnika
+userNameExists = Korisni\u010Dko ime postoji
+
+############### Client ###############
+serverError = Gre\u0161ka sa serverom
+noConnection = Veza sa izabranom stanicom ne postoji!

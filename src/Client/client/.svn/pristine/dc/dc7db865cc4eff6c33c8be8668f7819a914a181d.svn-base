@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="455.0" prefWidth="441.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.UserSettingsController">
+   <center>
+      <AnchorPane prefHeight="309.0" prefWidth="441.0" BorderPane.alignment="CENTER">
+         <children>
+            <TableView fx:id="tableUsers" layoutX="20.0" layoutY="14.0" onMouseClicked="#getSelectedUser" prefHeight="220.0" prefWidth="411.0">
+              <columns>
+                <TableColumn fx:id="columnId" prefWidth="50.0" text="Id" />
+                <TableColumn fx:id="columnName" prefWidth="103.0" text="Name" />
+                  <TableColumn fx:id="columnDate" prefWidth="111.0" text="Last login" />
+                  <TableColumn fx:id="columnRole" prefWidth="63.0" text="Role" />
+                  <TableColumn fx:id="columnDelete" prefWidth="79.0" text="Delete" />
+              </columns>
+            </TableView>
+            <TextField fx:id="txtNewName" layoutX="72.0" layoutY="249.0" prefHeight="25.0" prefWidth="98.0" />
+            <Label fx:id="lblName" layoutX="24.0" layoutY="253.0" prefHeight="17.0" prefWidth="44.0" text="Name:" />
+            <Label fx:id="lblRole" layoutX="193.0" layoutY="253.0" prefHeight="17.0" prefWidth="36.0" text="Role:" />
+            <ComboBox fx:id="comboUserAdmin" layoutX="229.0" layoutY="249.0" prefHeight="25.0" prefWidth="124.0" promptText="User/Admin" />
+            <Button layoutX="373.0" layoutY="249.0" mnemonicParsing="false" onAction="#saveChanges" prefHeight="25.0" prefWidth="58.0" text="Save" />
+         </children>
+      </AnchorPane>
+   </center>
+   <top>
+      <Pane fx:id="titlePane" prefHeight="117.0" prefWidth="441.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="imageUsersPane" fitHeight="93.0" fitWidth="162.0" layoutX="29.0" layoutY="11.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="lblUserPane" alignment="TOP_LEFT" layoutX="200.0" layoutY="19.0" prefHeight="93.0" prefWidth="232.0" wrapText="true">
+               <font>
+                  <Font size="16.0" />
+               </font></Label>
+         </children>
+      </Pane>
+   </top>
+   <bottom>
+      <Pane prefHeight="51.0" prefWidth="441.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="btnCancel" layoutX="341.0" layoutY="12.0" mnemonicParsing="false" onAction="#cancel" prefHeight="25.0" prefWidth="91.0" text="Cancel" />
+            <Button fx:id="btnOk" layoutX="283.0" layoutY="12.0" mnemonicParsing="false" onAction="#ok" prefHeight="25.0" prefWidth="45.0" text="OK" />
+         </children>
+      </Pane>
+   </bottom>
+</BorderPane>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="249.0" prefWidth="305.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.EmailPinController">
+   <top>
+      <Pane fx:id="titlePane" prefHeight="106.0" prefWidth="290.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="imageView" fitHeight="88.0" fitWidth="104.0" layoutX="14.0" layoutY="9.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="lblTitleText" alignment="TOP_LEFT" layoutX="109.0" layoutY="22.0" prefHeight="83.0" prefWidth="155.0" wrapText="true">
+               <font>
+                  <Font size="16.0" />
+               </font></Label>
+         </children></Pane>
+   </top>
+   <center>
+      <AnchorPane prefHeight="222.0" prefWidth="249.0" BorderPane.alignment="CENTER">
+         <children>
+            <TextField fx:id="txtEmail" layoutX="43.0" layoutY="20.0" prefHeight="25.0" prefWidth="185.0" promptText="E-mail" />
+            <Button fx:id="btnOk" layoutX="158.0" layoutY="113.0" mnemonicParsing="false" onAction="#forgotPasswodScreen" prefHeight="25.0" prefWidth="52.0" text="Ok" />
+            <Button fx:id="btnCancel" layoutX="222.0" layoutY="113.0" mnemonicParsing="false" onAction="#cancel" prefHeight="25.0" prefWidth="74.0" text="Cancel" />
+            <TextField fx:id="txtPin" layoutX="43.0" layoutY="59.0" prefHeight="25.0" prefWidth="185.0" promptText="Pin" />
+            <Button fx:id="btnEmailCheck" layoutX="233.0" layoutY="20.0" mnemonicParsing="false" onAction="#sendPin" prefHeight="25.0" prefWidth="63.0" text="Check" />
+            <ImageView fx:id="imageViewPinCheck" fitHeight="26.0" fitWidth="26.0" layoutX="9.0" layoutY="61.0" pickOnBounds="true" preserveRatio="true" />
+            <ImageView fx:id="imageViewEmailCheck" fitHeight="26.0" fitWidth="26.0" layoutX="9.0" layoutY="20.0" pickOnBounds="true" preserveRatio="true" />
+         </children>
+      </AnchorPane>
+   </center>
+</BorderPane>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="333.0" prefWidth="525.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.HomeController">
+   <children>
+      <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <center>
+            <Pane maxHeight="316.0" maxWidth="250.0" minHeight="30.0" minWidth="30.0" prefHeight="316.0" prefWidth="250.0">
+               <children>
+                  <Button fx:id="btnConnect" contentDisplay="CENTER" layoutX="90.0" layoutY="52.0" mnemonicParsing="false" onAction="#startConnect" prefWidth="80.0" text="Connect" textAlignment="CENTER" />
+                  <Button fx:id="btnHistorical" contentDisplay="CENTER" layoutX="87.0" layoutY="145.0" maxHeight="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#startHistorical" prefWidth="80.0" text="Historical" textAlignment="CENTER" />
+                  <Button fx:id="btnLanguage" alignment="CENTER" contentDisplay="CENTER" layoutX="86.0" layoutY="234.0" mnemonicParsing="false" onAction="#startLanguage" prefWidth="80.0" text="Language" textAlignment="CENTER" />
+               </children>
+            </Pane>
+         </center>
+         <top>
+            <MenuBar fx:id="MenuBarHome" BorderPane.alignment="CENTER">
+              <menus>
+                <Menu fx:id="menuOptions" mnemonicParsing="false" text="Options">
+                  <items>
+                    <MenuItem fx:id="MenuItemLogOut" mnemonicParsing="false" onAction="#logOut" text="Log out" />
+                  </items>
+                </Menu>
+                <Menu fx:id="menuHelp" mnemonicParsing="false" text="Help" />
+              </menus>
+            </MenuBar>
+         </top>
+      </BorderPane>
+   </children>
+</AnchorPane>

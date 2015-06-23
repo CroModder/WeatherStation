@@ -1,0 +1,49 @@
+############### Language ###############
+txtSelectLanguage = Select the language for the Weather Station program from the list below
+btnCancel = Cancel
+
+############### Register ###############
+registerTitle = Registration
+btnRegister = Register
+lblExampleEmail = Example: example@th-wildau.de
+lblReg1 = Please enter your username and password
+txtRePassword = Retype password
+txtEmail = E-mail (not required)
+alertTitleRegister = Registration
+alertContentRegister1 = Thank you
+alertContentRegister2 = for your registration. \nYou can log in now.
+errorNull = One or both passwords are null
+errorEmptyFields = You have to fill out all required fields
+errorPasswordShort = Your password must have at least 4 characters
+errorPasswordNotMatch = Passwords do not match
+
+############### Log in ###############
+btnRegisterNow = Register now
+txtUserName = Username
+txtPassword = Password
+btnLogin = Log in
+menuBtnAdmin = Administrator
+menuBtnUser = User
+lblRegTxt=Did not register yet? Well then...
+errorEmpty = Please enter your username and password
+errorIncorrect = Username or password is incorrect
+lblForgotPasswd = Forgot password?
+
+############### Home ###############
+btnConnect = Connect
+btnHistorical = Historical
+btnLanguage = Language
+options = Options
+help = Help
+logOut = Log out
+
+############### Historical ###############
+lblBeginDate = Begin date
+lblEndDate = End date
+Temperature = Temperature
+AirPressure = Air pressure
+MagneticField = Magnetic field
+Movement = Movement
+Show = Show
+WeatherStation = Weather station
+HectoPascal = Hectopascal

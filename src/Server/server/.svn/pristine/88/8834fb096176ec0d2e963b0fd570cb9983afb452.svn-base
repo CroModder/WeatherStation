@@ -1,0 +1,89 @@
+package controller;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+
+/**
+ * Server application
+ *
+ * @author
+ *      T13_SWP5 (T13S)
+ */
+public class Users {
+
+    @Option(name="-help" , usage="print this message")
+    private boolean help;
+
+    @Option(name="-ADD", usage="Add new user")
+    private boolean add;
+    
+    @Option(name="-EDIT", metaVar="<user_id>", usage="Delete user with specific ID")
+    private String edit;
+    
+    @Option(name="-DELETE", metaVar="<user_id>", usage="Edit user with specific ID")
+    private String delete;
+    
+    @Option(name="-LIST", usage="List all users")
+    private boolean list;
+
+    // receives other command line parameters than options
+    @Argument
+    private List<String> arguments = new ArrayList<String>();
+    
+    CmdLineParser parser = new CmdLineParser(this);
+
+    public void doMain(String[] args) throws IOException {
+    	List<String> userinput = new ArrayList<String>();
+    	System.out.println("==================== Users Settings ====================");
+    	String userInput;
+        Scanner in = new Scanner(System.in);
+        parser.printUsage(System.out);
+        System.out.print("> ");
+        userInput = in.nextLine();
+        in.close();            
+        
+    	parser = new CmdLineParser(this);
+        try {
+            // parse the arguments.
+            parser.parseArgument(userinput);
+            
+            if(!arguments.isEmpty()) {
+            	printUsage();
+            }
+
+        } catch( CmdLineException e ) {
+            System.err.println(e.getMessage());
+            System.err.println("Usage: [options...]");
+            System.err.println("Options:");
+            parser.printUsage(System.err);
+            System.err.println();
+
+            return;
+        }
+
+        if( help ) {
+        	System.out.println("Usage: [options...]");
+        	System.out.println("Options:");
+            parser.printUsage(System.out);
+        }
+        
+        if (list){
+        	System.out.println("List of all registered users:\nID\tName\t\tE-mail");
+        }
+    }
+
+	public void printUsage() {
+		System.err.println("- Invalid argument given!");
+    	System.err.println("Usage: [options...]");
+        System.err.println("Options:");
+        parser.printUsage(System.err);
+		
+	}
+}

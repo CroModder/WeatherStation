@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.effect.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="159.0" prefWidth="432.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LanguageController">
+   <children>
+      <Text fx:id="txtSelectLanguage" layoutX="164.0" layoutY="41.0" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="257.443359375" />
+      <MenuButton fx:id="menuBtnChooseLanguage" layoutX="164.0" layoutY="72.0" mnemonicParsing="false" onAction="#chooseLanguage" prefHeight="23.0" prefWidth="103.0" text="Deutsch">
+        <items>
+          <MenuItem fx:id="menuItemDeutsch" mnemonicParsing="false" onAction="#chooseLanguage" text="Deutsch" />
+          <MenuItem fx:id="menuItemEnglish" mnemonicParsing="false" onAction="#chooseLanguage" text="English" />
+            <MenuItem fx:id="menuItemCroatian" mnemonicParsing="false" onAction="#chooseLanguage" text="Hrvatski" />
+        </items>
+      </MenuButton>
+      <Button fx:id="btnOkLanguage" layoutX="284.0" layoutY="136.0" mnemonicParsing="false" onAction="#selectLanguage" prefHeight="25.0" prefWidth="42.0" text="OK" />
+      <Button fx:id="btnCancel" layoutX="334.0" layoutY="136.0" mnemonicParsing="false" onAction="#cancelLanguage" prefHeight="25.0" prefWidth="82.0" />
+      <ImageView fitHeight="159.0" fitWidth="159.0" layoutX="1.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../img/language.png" />
+         </image>
+      </ImageView>
+   </children>
+</AnchorPane>

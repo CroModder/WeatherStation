@@ -1,0 +1,10 @@
+
+.dialogStyle{
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+    -fx-base: rgb(50, 60, 100);
+    -fx-background-color: linear-gradient(white, rgb(210, 230, 240));
+}
+
+.dialogStyle > *.label.content{
+    -fx-text-fill: rgb(50, 60, 100);
+}

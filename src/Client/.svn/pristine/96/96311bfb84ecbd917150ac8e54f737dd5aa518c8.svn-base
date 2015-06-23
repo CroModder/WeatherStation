@@ -1,0 +1,15 @@
+package controller;
+
+
+public class Language {
+	
+	static String language = "de_de";		
+	
+	public static String getLanguage() {
+		return language;
+	}
+	public static void setLanguage(String language) {
+		Language.language = language;
+	}
+	
+}

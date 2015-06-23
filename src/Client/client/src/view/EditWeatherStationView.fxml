@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="496.0" prefWidth="475.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.EditWeatherStationController">
+   <bottom>
+      <AnchorPane prefHeight="53.0" prefWidth="453.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="btnCancel" layoutX="377.0" layoutY="18.0" mnemonicParsing="false" onAction="#cancel" prefHeight="25.0" prefWidth="87.0" text="Cancel" />
+            <Button fx:id="btnConfirm" layoutX="268.0" layoutY="18.0" mnemonicParsing="false" onAction="#editWs" prefWidth="100.0" text="Save changes" />
+         </children>
+      </AnchorPane>
+   </bottom>
+   <center>
+      <AnchorPane prefHeight="334.0" prefWidth="453.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="lblWsName" layoutX="14.0" layoutY="225.0" prefWidth="60.0" text="Ws name:" />
+            <TableView fx:id="tableWS" layoutX="18.0" layoutY="16.0" onMouseClicked="#getSelectedWs" prefHeight="167.0" prefWidth="447.0">
+               <columns>
+                  <TableColumn fx:id="tableColName" prefWidth="130.0" resizable="false" text="Ws Name" />
+                  <TableColumn fx:id="tableColIp" prefWidth="147.0" resizable="false" text="IP address" />
+                  <TableColumn fx:id="tableColPort" minWidth="0.0" prefWidth="83.0" resizable="false" text="Port" />
+                  <TableColumn fx:id="tableColDelete" minWidth="2.0" prefWidth="84.0" text="Delete" />
+               </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+            <TextField fx:id="txtWsName" layoutX="78.0" layoutY="221.0" prefHeight="26.0" prefWidth="147.0" />
+            <Label fx:id="lblIpAddress" layoutX="6.0" layoutY="266.0" prefHeight="17.0" prefWidth="69.0" text="IP adress:" />
+            <TextField fx:id="txtIPAdress" layoutX="78.0" layoutY="262.0" prefHeight="26.0" prefWidth="147.0" />
+            <Label layoutX="16.0" layoutY="308.0" prefHeight="17.0" prefWidth="50.0" text="Port:" />
+            <TextField fx:id="txtPort" layoutX="78.0" layoutY="303.0" prefHeight="26.0" prefWidth="147.0" />
+            <Pane fx:id="paneAdminSlider" layoutX="238.0" layoutY="210.0" prefHeight="124.0" prefWidth="230.0">
+               <children>
+                  <Label fx:id="lblRealTimeFreq" layoutX="14.0" layoutY="6.0" text="Real-time freq:" />
+                  <Slider fx:id="freqSlider" layoutX="14.0" layoutY="85.0" prefHeight="14.0" prefWidth="114.0" />
+                  <Label fx:id="lblFreq" layoutX="139.0" layoutY="83.0" prefHeight="17.0" prefWidth="82.0" />
+                  <RadioButton fx:id="radioSeconds" layoutX="9.0" layoutY="39.0" mnemonicParsing="false" onAction="#radioFreq" prefHeight="17.0" prefWidth="85.0" text="Seconds" />
+                  <RadioButton fx:id="radioMiliS" layoutX="137.0" layoutY="39.0" mnemonicParsing="false" onAction="#radioFreq" text="Miliseconds" />
+                  <Separator layoutX="105.0" layoutY="33.0" orientation="VERTICAL" prefHeight="25.0" />
+               </children>
+            </Pane>
+         </children>
+      </AnchorPane>
+   </center>
+   <top>
+      <AnchorPane fx:id="paneEditTitle" prefHeight="109.0" prefWidth="465.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="imageEdit" fitHeight="95.0" fitWidth="149.0" layoutX="30.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="lblEditTitle" alignment="TOP_LEFT" layoutX="176.0" layoutY="18.0" prefHeight="86.0" prefWidth="260.0" wrapText="true">
+               <font>
+                  <Font size="16.0" />
+               </font></Label>
+         </children>
+      </AnchorPane>
+   </top>
+</BorderPane>

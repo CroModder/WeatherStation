@@ -1,0 +1,135 @@
+package socket;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Timer;
+import java.util.TimerTask;
+import org.json.JSONException;
+import org.json.JSONObject;
+import controller.DbController;
+
+public class Server {
+	private static DbController dbController = new DbController();
+	private static JSONObject object = new JSONObject();
+	private static boolean loopStop = false;
+	private static boolean verified = false;
+
+	public static void start() throws IOException {
+		dbController.dbInit();
+		ServerSocket serverSocket= new ServerSocket(6040);
+		serverSocket.getInetAddress();
+		System.out.println("Server started at: " + InetAddress.getLocalHost() + " on port: " + serverSocket.getLocalPort());
+		try {
+			while (!Thread.interrupted()) {
+				final Socket socket= serverSocket.accept();
+				startHandler(socket);
+			}
+		} finally {
+			serverSocket.close();
+		}
+	}
+
+	private static void startHandler(final Socket socket) {
+		Thread handler= new Thread() {
+			private Timer timer = new Timer();
+			private TimerTask timerTask;
+
+			public void run() {
+				while(!socket.isClosed()){
+					try {
+	
+		        		if(socket.isClosed()){
+		        			System.out.println("Socket is closed!");
+					    	timerTask.cancel();
+					    	timer.purge();
+					    }
+			        	else {
+							BufferedReader reader= new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+							String jsonText= reader.readLine();
+							if(jsonText == null){
+								System.out.println("Closing the socket...");
+								closeSocket();
+							}
+							else {
+								System.out.println("server " + jsonText);
+							object= new JSONObject(jsonText);
+							System.out.println(object.toString());
+							switch(object.getString("action")) {
+							    case "auth":
+							    	try {
+										if(dbController.authCheck(object.getString("username"), object.getString("password"))){
+											verified = true;
+											loopStop = false;
+											sendData();
+										}else{
+											verified = false;
+										}
+									} catch (JSONException e) {
+										e.printStackTrace();
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+							        break;
+							    case "data":
+							    	loopStop = false;
+							        sendData();
+							        break;
+							    case "stop":
+							    	System.out.println("Stop je dosao");
+							    	loopStop = true;
+							        break;
+							    case "config":
+							    	break;
+							    default:
+							    	System.out.println("Ilegal action!");
+							    	break;
+							}
+							}
+			        	}
+					} catch (IOException ex) {
+						ex.printStackTrace();
+						closeSocket();
+					}	    	
+			 
+				}
+			}
+			
+			private void sendData() {
+					timerTask = new TimerTask() {
+					    @Override
+					    public void run() {
+					    	try {
+					    		if(loopStop == true){
+					    			timerTask.cancel();
+					    			timer.cancel();
+					    			timer.purge();
+					    		}else{
+									System.out.println("Timer Verified is " + verified + " " + timerTask);
+									OutputStreamWriter writer= new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
+									object.put("number", "true");
+									writer.write(object.toString() + "\n");
+									writer.flush();
+					    		}
+							} catch (Exception e) {
+							}
+					    };
+					};timer.schedule(timerTask,1000,1000);
+			}
+			
+			private void closeSocket() {
+				try {
+					socket.close();
+				} catch (IOException ex) {
+
+				}
+			}
+		};
+		handler.start();
+		System.out.println("Thread ID: " + handler.getId() + " ,Thread Name: " + handler.getName());
+	}
+}

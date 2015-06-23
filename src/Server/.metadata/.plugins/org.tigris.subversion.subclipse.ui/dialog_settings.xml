@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<item value="0" key="CommitDialog.location.y"/>
+	<item value="223" key="CommitDialog.location.x"/>
+	<item value="500" key="CommitDialog.weights.0"/>
+	<item value="538" key="RevertDialog.location.x"/>
+	<item value="500" key="CommitDialog.weights.1"/>
+	<item value="187" key="RevertDialog.location.y"/>
+	<item value="870" key="CommitDialog.size.y"/>
+	<item value="1155" key="CommitDialog.size.x"/>
+	<item value="373" key="RevertDialog.size.y"/>
+	<item value="525" key="RevertDialog.size.x"/>
+	<item value="484" key="ChooseUrlDialog.size.x"/>
+	<item value="354" key="ChooseUrlDialog.size.y"/>
+	<item value="https://www.tm.th-wildau.de/svn/sp15-gr5" key="RepositorySelectionPage.lastRepository"/>
+	<item value="558" key="ChooseUrlDialog.location.x"/>
+	<item value="132" key="ChooseUrlDialog.location.y"/>
+	<item value="Server" key="DirectorySelectionPage.lastParent_https://www.tm.th-wildau.de/svn/sp15-gr5"/>
+	<section name="CommitWizard">
+		<item value="500" key="VWeight2"/>
+		<item value="500" key="VWeight1"/>
+		<item value="false" key="ShowCompare"/>
+	</section>
+	<section name="NewLocationWizard">
+	</section>
+</section>

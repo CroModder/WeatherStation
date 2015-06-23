@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="367.0" prefWidth="249.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.ForgotPasswordController">
+   <top>
+      <Pane prefHeight="106.0" prefWidth="290.0" BorderPane.alignment="CENTER" />
+   </top>
+   <center>
+      <AnchorPane prefHeight="185.0" prefWidth="370.0" BorderPane.alignment="CENTER">
+         <children>
+            <TextField fx:id="txtUserName" layoutX="33.0" layoutY="29.0" prefHeight="25.0" prefWidth="190.0" promptText="Username" />
+            <ProgressBar fx:id="progressBar" layoutX="32.0" layoutY="101.0" prefHeight="18.0" prefWidth="190.0" progress="0.0" />
+            <Button fx:id="btnOk" layoutX="123.0" layoutY="229.0" mnemonicParsing="false" onAction="#changePasswd" prefHeight="25.0" prefWidth="52.0" text="Ok" />
+            <Button fx:id="btnCancel" layoutX="187.0" layoutY="229.0" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
+            <Label fx:id="lblErrorMessage" layoutX="32.0" layoutY="169.0" prefHeight="43.0" prefWidth="190.0" />
+            <PasswordField fx:id="txtPassword" layoutX="33.0" layoutY="65.0" prefHeight="25.0" prefWidth="190.0" promptText="Password" />
+            <PasswordField fx:id="txtRetypePasswd" layoutX="34.0" layoutY="131.0" prefWidth="190.0" promptText="Retype passsword" />
+         </children>
+      </AnchorPane>
+   </center>
+</BorderPane>

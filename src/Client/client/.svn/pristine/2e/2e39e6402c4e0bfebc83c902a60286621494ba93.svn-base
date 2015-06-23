@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.*?>
+<?import javafx.scene.effect.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="457.0" prefWidth="316.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.RegisterController">
+   <children>
+      <Pane fx:id="paneTitleReg" prefHeight="116.0" prefWidth="316.0">
+         <children>
+            <ImageView fitHeight="107.0" fitWidth="86.0" layoutX="14.0" layoutY="15.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/addUserIcon.png" />
+               </image></ImageView>
+            <Label fx:id="lblReg1" alignment="TOP_LEFT" layoutX="121.0" layoutY="21.0" prefHeight="77.0" prefWidth="182.0" text="Label" wrapText="true">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+         </children>
+      </Pane>
+      <TextField fx:id="txtUserName2" layoutX="70.0" layoutY="143.0" prefHeight="27.0" prefWidth="182.0" promptText="Username" />
+      <PasswordField fx:id="txtPassword2" layoutX="70.0" layoutY="185.0" prefHeight="25.0" prefWidth="182.0" promptText="Password" />
+      <PasswordField fx:id="txtRePassword" layoutX="69.0" layoutY="254.0" prefHeight="25.0" prefWidth="182.0" promptText="Retype password" />
+      <Button fx:id="btnRegister2" layoutX="39.0" layoutY="409.0" mnemonicParsing="false" onAction="#register" prefHeight="31.0" prefWidth="117.0" text="Register" />
+      <Button fx:id="btnCancelReg" layoutX="160.0" layoutY="409.0" mnemonicParsing="false" onAction="#cancelRegistration" prefHeight="31.0" prefWidth="117.0" text="Cancel" />               
+      <Label fx:id="lblErrorMsg2" alignment="CENTER" layoutX="67.0" layoutY="350.0" prefHeight="48.0" prefWidth="182.0" textAlignment="CENTER" textFill="RED" wrapText="true" />
+   	  <TextField fx:id="txtEmail" layoutX="69.0" layoutY="295.0" prefHeight="27.0" prefWidth="182.0" promptText="E-mail" />
+      <Label fx:id="lblExampleEmail" alignment="CENTER" layoutX="70.0" layoutY="327.0" prefHeight="15.0" prefWidth="182.0" text="example: jerkovic@th-wildau.de">
+         <font>
+            <Font size="10.0" />
+         </font></Label>
+      <ProgressBar fx:id="progressBar" layoutX="70.0" layoutY="225.0" prefHeight="14.0" prefWidth="182.0" progress="0.0" />
+   </children>
+</AnchorPane>

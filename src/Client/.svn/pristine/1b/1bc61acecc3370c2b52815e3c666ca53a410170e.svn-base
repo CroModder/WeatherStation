@@ -1,0 +1,49 @@
+############### Language ###############
+txtSelectLanguage = Izaberite \u017Eeljeni jezik iz liste ponu\u0111enih
+btnCancel = Prekid
+
+############### Register ###############
+registerTitle = Registracija
+btnRegister = Registracija
+lblExampleEmail = Primjer: primjer@th-wildau.de
+lblReg1 = Molimo unesite korisni\u010Dko ime i lozinku
+txtRePassword = Ponovite lozinku
+txtEmail = E-mail (nije potrebno)
+alertTitleRegister = Registracija
+alertContentRegister1 = Hvala
+alertContentRegister2 = za Va\u0161u registraciju. \nSada se mo\u017Eete prijaviti.
+errorNull = Jedna ili obje lozinke su null
+errorEmptyFields = Molimo ispunite sva potrebna polja
+errorPasswordShort = Lozinka se mora sastojati od barem 4 znaka
+errorPasswordNotMatch = Lozinke nisu iste
+
+############### Log in ###############
+btnRegisterNow = Registriraj se
+txtUserName = Korisni\u010Dko ime
+txtPassword = Lozinka
+btnLogin = Prijava
+menuBtnAdmin = Administrator
+menuBtnUser = Korisnik
+lblRegTxt=Niste se jo\u0161 registrirali? \u0160to \u010Dekate...
+errorEmpty = Molimo unesite va\u0161e korisni\u010Dko ime i lozinku
+errorIncorrect = Korisni\u010Dko ime ili lozinka nisu ispravni
+lblForgotPasswd = Zaboravili ste lozinku?
+
+############### Home ###############
+btnConnect = Spajanje
+btnHistorical = Povijesno
+btnLanguage = Jezik
+options = Postavke
+help = Pomo\u0107
+logOut = Odjava
+
+############### Historical ###############
+lblBeginDate = Po\u010Detni datum
+lblEndDate = Krajnji datum
+Temperature = Temperatura
+AirPressure = Tlak zraka
+MagneticField = Magnetsko polje
+Movement = Pomak
+Show = Prika\u017Ei
+WeatherStation = Meteorolo\u0161ka stanica
+HectoPascal = Hektopaskal

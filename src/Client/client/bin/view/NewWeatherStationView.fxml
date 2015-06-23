@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="314.0" prefWidth="547.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.NewWeatherStationController">
+   <center>
+      <AnchorPane prefHeight="149.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="lblWsName" layoutX="20.0" layoutY="25.0" prefHeight="17.0" prefWidth="72.0" text="Ws name:" />
+            <TextField fx:id="txtWsName" layoutX="94.0" layoutY="21.0" prefHeight="26.0" prefWidth="196.0" />
+            <TextField fx:id="txtIPAdress" layoutX="94.0" layoutY="60.0" prefHeight="26.0" prefWidth="196.0" />
+            <Label fx:id="lblPort" layoutX="21.0" layoutY="105.0" prefHeight="17.0" prefWidth="67.0" text="Port:" />
+            <TextField fx:id="txtPort" layoutX="94.0" layoutY="100.0" prefHeight="26.0" prefWidth="195.0" />
+            <Label fx:id="lblIpAddress" layoutX="21.0" layoutY="64.0" prefHeight="17.0" prefWidth="66.0" text="IP adress:" />
+            <Pane fx:id="freqPane" layoutX="298.0" layoutY="2.0" prefHeight="123.0" prefWidth="245.0">
+               <children>
+                  <Label fx:id="lblFreq" alignment="CENTER" contentDisplay="CENTER" layoutX="177.0" layoutY="97.0" prefHeight="17.0" prefWidth="59.0" textAlignment="CENTER" />
+                  <Label fx:id="lblRealTimeFreq" layoutX="14.0" layoutY="19.0" text="Real-time freq:" />
+                  <RadioButton fx:id="radioSeconds" layoutX="14.0" layoutY="51.0" mnemonicParsing="false" onAction="#radioFreq" prefHeight="17.0" prefWidth="85.0" text="Seconds" />
+                  <RadioButton fx:id="radioMiliS" layoutX="147.0" layoutY="51.0" mnemonicParsing="false" onAction="#radioFreq" text="Miliseconds" />
+                  <Slider fx:id="freqSlider" layoutX="18.0" layoutY="98.0" prefHeight="14.0" prefWidth="147.0" />
+                  <Separator layoutX="113.0" layoutY="45.0" orientation="VERTICAL" prefHeight="25.0" />
+               </children>
+            </Pane>
+         </children>
+      </AnchorPane>
+   </center>
+   <top>
+      <Pane fx:id="paneNewTitle" prefHeight="122.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="imageNew" fitHeight="99.0" fitWidth="167.0" layoutX="29.0" layoutY="12.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="lblNewTitle" alignment="TOP_LEFT" layoutX="172.0" layoutY="26.0" prefHeight="64.0" prefWidth="273.0" wrapText="true">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+         </children>
+      </Pane>
+   </top>
+   <bottom>
+      <AnchorPane prefHeight="65.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="btnConfirm" layoutX="353.0" layoutY="25.0" mnemonicParsing="false" onAction="#addNewWs" prefHeight="25.0" prefWidth="87.0" text="Add" />
+            <Button fx:id="btnCancel" layoutX="445.0" layoutY="25.0" mnemonicParsing="false" onAction="#cancel" prefHeight="25.0" prefWidth="87.0" text="Cancel" />
+         </children>
+      </AnchorPane>
+   </bottom>
+</BorderPane>

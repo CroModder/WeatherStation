@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="496.0" prefWidth="453.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.EditWeatherStationController">
+   <bottom>
+      <AnchorPane prefHeight="67.0" prefWidth="465.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="btnCancel" layoutX="389.0" layoutY="28.0" mnemonicParsing="false" onAction="#cancel" prefWidth="60.0" text="Cancel" />
+            <Button fx:id="btnConfirm" layoutX="283.0" layoutY="28.0" mnemonicParsing="false" onAction="#editWs" prefWidth="100.0" text="Save changes" />
+         </children>
+      </AnchorPane>
+   </bottom>
+   <center>
+      <AnchorPane prefHeight="320.0" prefWidth="447.0" BorderPane.alignment="CENTER">
+         <children>
+            <Label layoutX="14.0" layoutY="225.0" prefWidth="60.0" text="Ws name:" />
+            <TableView fx:id="tableWS" layoutX="18.0" layoutY="16.0" onMouseClicked="#getSelectedWs" prefHeight="167.0" prefWidth="430.0">
+               <columns>
+                  <TableColumn fx:id="tableColName" prefWidth="111.0" resizable="false" text="Ws Name" />
+                  <TableColumn fx:id="tableColIp" prefWidth="135.0" resizable="false" text="IP address" />
+                  <TableColumn fx:id="tableColPort" minWidth="0.0" prefWidth="81.0" resizable="false" text="Port" />
+                  <TableColumn fx:id="tableColDelete" minWidth="2.0" prefWidth="100.0" text="Delete" />
+               </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
+            <TextField fx:id="txtWsName" layoutX="78.0" layoutY="221.0" prefHeight="26.0" prefWidth="147.0" />
+            <Label layoutX="15.0" layoutY="288.0" prefWidth="60.0" text="IP adress:" />
+            <TextField fx:id="txtIPAdress" layoutX="78.0" layoutY="284.0" prefHeight="26.0" prefWidth="147.0" />
+            <Label layoutX="265.0" layoutY="289.0" prefHeight="17.0" prefWidth="50.0" text="Port:" />
+            <TextField fx:id="txtPort" layoutX="320.0" layoutY="284.0" prefHeight="26.0" prefWidth="122.0" />
+            <Pane fx:id="paneAdminSlider" layoutX="238.0" layoutY="210.0" prefHeight="65.0" prefWidth="210.0">
+               <children>
+                  <Label fx:id="lblRealTimeFreq" layoutX="26.0" layoutY="4.0" text="Real-time freq:" />
+                  <Slider fx:id="freqSlider" layoutX="25.0" layoutY="26.0" prefHeight="14.0" prefWidth="129.0" />
+                  <Label fx:id="lblFreq" layoutX="160.0" layoutY="24.0" prefHeight="17.0" prefWidth="45.0" />
+               </children>
+            </Pane>
+         </children>
+      </AnchorPane>
+   </center>
+   <top>
+      <AnchorPane fx:id="paneEditTitle" prefHeight="109.0" prefWidth="465.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="imageEdit" fitHeight="95.0" fitWidth="149.0" layoutX="30.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="lblEditTitle" alignment="TOP_LEFT" layoutX="176.0" layoutY="18.0" prefHeight="69.0" prefWidth="260.0">
+               <font>
+                  <Font size="16.0" />
+               </font></Label>
+         </children>
+      </AnchorPane>
+   </top>
+</BorderPane>

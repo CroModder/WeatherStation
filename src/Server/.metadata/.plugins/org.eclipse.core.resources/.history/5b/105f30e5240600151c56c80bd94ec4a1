@@ -1,0 +1,453 @@
+package controller;
+
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import model.UsersModel;
+import model.WeatherStationModel;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+public class DbController {
+	
+	private ErrorLogController errorLogController = new ErrorLogController();
+	private static Connection connection = null;
+	private PreparedStatement RegisterUser = null;
+	private PreparedStatement LogInUser = null;
+	private PreparedStatement NewWs = null;
+	private PreparedStatement Users = null;
+	private PreparedStatement Recording = null;
+	public static ObservableList<WeatherStationModel> weatherStationData = FXCollections.observableArrayList();
+	public static ObservableList<UsersModel> usersData = FXCollections.observableArrayList();
+	public static ArrayList<UsersModel> userList = new ArrayList<UsersModel>();
+	public static ArrayList<WeatherStationModel> wsList = new ArrayList<WeatherStationModel>();
+	
+	private static final String SQL_REGISTER = "INSERT INTO USERS (NAME,ROLE,PASSWORD,EMAIL)" + " VALUES(?, ?, ?, ?)";
+	private static final String SQL_GET_USERNAME = "SELECT NAME FROM USERS WHERE NAME = ?";
+	private static final String SQL_AUTH = "SELECT ID, NAME, PASSWORD FROM USERS WHERE NAME = ? AND PASSWORD = ?";
+	private static final String SQL_NEW_WS = "INSERT INTO DEVICES (NAME,IP,PORT,IDUSER,INTERVAL)" + " VALUES(?, ?, ?, ?, ?)";
+	private static final String SQL_UPDATE_WS = "UPDATE DEVICES SET NAME = ?, IP = ?, PORT = ?, INTERVAL = ?, SENSOR = ? WHERE ID = ?";
+	private static final String SQL_DELETE_WS = "DELETE FROM DEVICES WHERE ID = ?";
+	private static final String SQL_EDIT_USER = "UPDATE USERS SET NAME = ?, ROLE = ? WHERE ID = ?";
+	private static final String SQL_DELETE_USER = "DELETE FROM USERS WHERE ID = ?";
+	private static final String SQL_SELECT_USER = "SELECT NAME FROM USERS WHERE ID = ?";
+	private static final String SQL_GET_DEVICES = "SELECT ID, NAME, IP, PORT, INTERVAL, SENSOR FROM DEVICES";
+	private static final String SQL_GET_DEVICE_ID = "SELECT ID FROM DEVICES WHERE NAME = ?";
+	private static final String SQL_GET_DEVICE_INTERVAL = "SELECT INTERVAL FROM DEVICES WHERE ID = ?";
+	private static final String SQL_GET_DEVICE_PORT = "SELECT PORT FROM DEVICES WHERE ID = ?";
+	private static final String SQL_SELECT_DEVICE = "SELECT NAME FROM DEVICES WHERE ID = ?";
+	private static final String SQL_RECORD = "INSERT INTO WEATHER (IDDEVICE,TIMESTAMP,TEMPERATURE,PRESSURE,MX,MY,MZ,ACCELEROMETER,IDUSER)" + " VALUES(?,to_date(?, 'dd.mm.yyyy hh24:mi'),?,?,?,?,?,?,?)";
+	
+	public boolean dbInit() throws IOException{
+		Boolean result;
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			connection = DriverManager.getConnection("jdbc:oracle:thin:@194.95.45.165:1521:orcl","T13_SWP5","ss15_swp5");
+			//System.out.println("Initialize Db connection " + connection);
+			result = true;
+		} catch (Exception e) {
+            errorLogController.error(e.toString());
+			//System.out.print("Database connection error!" + e);
+			result = false;
+		}
+		return result;
+	}
+	
+	public ArrayList<UsersModel> getUsers() throws SQLException {
+		PreparedStatement st = null;
+		try {
+			st = connection.prepareStatement("SELECT ID, NAME, EMAIL, ROLE FROM USERS ORDER BY ID");
+			ResultSet rs = st.executeQuery();
+			userList.clear();
+			while (rs.next()) {
+				userList.add(new UsersModel(rs.getInt("ID"), rs.getString("NAME"),rs.getString("EMAIL"),rs.getInt("ROLE")));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+	        if (st != null) {
+	        	st.close();
+	        }
+	    }
+		return userList;
+	}
+	
+	public boolean authCheck(String userName, String password) throws Exception{
+	boolean result = false;
+		ResultSet rs = null;;
+		try {
+			connection.setAutoCommit(false);
+			LogInUser = connection.prepareStatement(SQL_AUTH);
+			LogInUser.setString(1,userName);
+			LogInUser.setString(2,password);
+			rs = LogInUser.executeQuery();
+			connection.commit();
+			while (rs.next()) {
+				System.out.println(rs.getInt("ID"));
+				result = true;
+			}
+			
+		} catch (Exception e) {
+            errorLogController.error(e.toString());
+	        if (connection != null) {
+	            try {
+	                System.err.print("\n Log in Transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (LogInUser != null) {
+	        	LogInUser.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return result;
+	}
+	//TODO Napravit funkciju
+	public long checkInterval(int id){
+		long interval = 0;
+		return interval;
+	}
+	
+	public boolean checkUser(String userName) throws SQLException{
+		boolean result = false;
+		PreparedStatement rs = null;
+		try {
+			rs = connection.prepareStatement(SQL_GET_USERNAME);
+			rs.setString(1,userName);
+	        int numberOfRows = rs.executeUpdate();
+	        if (numberOfRows > 0) {
+	        	result = true;
+	        }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+	        if (rs != null) {
+	            rs.close();
+	        }
+	    }
+		return result;
+		
+	}
+	
+	public String[] register(String userName, String password, String email) throws SQLException{
+		boolean result = false;
+		String errorMessage = "";
+		
+		try {
+			
+            	RegisterUser = connection.prepareStatement(SQL_REGISTER);
+    			RegisterUser.setString(1,userName);
+    			RegisterUser.setInt(2, 2);
+    			RegisterUser.setString(3,hash256(password));
+    			RegisterUser.setString(4,email);
+    			RegisterUser.executeUpdate();
+    			result = true;
+		} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+	        if (RegisterUser != null) {
+	            RegisterUser.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return new String[] {String.valueOf(result), errorMessage};
+	}
+
+	public boolean newWs(String name, String ip, Integer port, Integer idUser, Integer interval) throws SQLException{
+		boolean result = false;
+		PreparedStatement addWs = null;
+		try {
+			addWs = connection.prepareStatement(SQL_NEW_WS);
+			addWs.setString(1,name);
+			addWs.setString(2,ip);
+			addWs.setInt(3,port);
+			addWs.setInt(4,idUser);
+			addWs.setInt(5,interval);
+			addWs.execute();
+			result = true;
+		} catch (Exception e) {
+	        result = false;
+	        System.err.println("Adding new device into the database failed!");
+		}finally{
+			if (addWs != null) {
+				addWs.close();
+	        }
+		}
+		return result;
+	}
+	
+	public int getDeviceID(String name) throws SQLException{
+		int id = 0;
+		try {
+			NewWs = connection.prepareStatement(SQL_GET_DEVICE_ID);
+			NewWs.setString(1,name);
+			ResultSet rs = NewWs.executeQuery();
+			while (rs.next()) {
+						id = rs.getInt("ID");
+					}
+			
+		} catch (Exception e) {
+	        System.err.println(e);
+		}finally{
+			if (NewWs != null) {
+				NewWs.close();
+	        }
+		}
+		return id;
+	}
+	
+	public int getDeviceInterval( int id) throws SQLException{
+		int interval = 0;
+		PreparedStatement ps = null;
+		try {
+			ps = connection.prepareStatement(SQL_GET_DEVICE_INTERVAL);
+			ps.setInt(1,id);
+			ResultSet rs = ps.executeQuery();
+			while (rs.next()) {
+						interval = rs.getInt("INTERVAL");
+					}
+			
+		} catch (Exception e) {
+	        System.err.println(e);
+		}finally{
+			if (ps != null) {
+				ps.close();
+	        }
+		}
+		return interval;
+	}
+	
+	public boolean checkWsExist(String name) throws SQLException{
+		boolean exist = false;
+		PreparedStatement checkWs = null;
+		try {
+			checkWs = connection.prepareStatement(SQL_GET_DEVICE_ID);
+			checkWs.setString(1,name);
+			ResultSet rs = checkWs.executeQuery();
+			int countRow = 0;
+			while (rs.next()) {
+						countRow++;
+					}
+			if (countRow > 0){
+				exist = true;
+			}
+		} catch (Exception e) {
+			System.err.println("Problem when executing the query!");
+		}finally{
+			if (checkWs != null) {
+				checkWs.close();
+	        }
+		}
+		return exist;
+	}
+	
+	
+	public int getDevicePort(int id) throws SQLException{
+		int port = 0;
+		try {
+			NewWs = connection.prepareStatement(SQL_GET_DEVICE_PORT);
+			NewWs.setInt(1,id);
+			ResultSet rs = NewWs.executeQuery();
+			while (rs.next()) {
+						port = rs.getInt("PORT");
+					}
+			
+		} catch (Exception e) {
+	        System.err.println(e);
+		}finally{
+			if (NewWs != null) {
+				NewWs.close();
+	        }
+		}
+		return port;
+	}
+	
+	public String editWs(Integer id, String name, String ip, Integer port, Integer interval, String sensor) throws SQLException{
+		String message = "Device does not exist!";
+		PreparedStatement ws = null;
+		try {
+			ws = connection.prepareStatement(SQL_SELECT_DEVICE);
+			ws.setInt(1,id);
+            int numberOfRows = ws.executeUpdate();
+            if (ws != null) {
+	            ws.close();
+	        }
+            if (numberOfRows > 0) {
+            	ws = connection.prepareStatement(SQL_UPDATE_WS);
+    			ws.setString(1, name);
+            	ws.setString(2, ip);
+            	ws.setInt(3, port);
+            	ws.setInt(4, interval);
+            	ws.setString(5, sensor);
+            	ws.setInt(6, id);
+    			ws.executeUpdate();
+    			message="Device edited successfully!";
+    			
+            }
+            else {
+            	message="Device does not exist!";
+            }
+		} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+	        if (ws != null) {
+	            ws.close();
+	        }
+	    }
+		return message;
+	}
+	
+	public boolean deleteWs(int id) throws SQLException{
+		boolean result = false;
+		PreparedStatement ws = null;
+			try {
+				ws = connection.prepareStatement(SQL_SELECT_DEVICE);
+				ws.setInt(1,id);
+	            int numberOfRows = ws.executeUpdate();
+	            if (ws != null) {
+		            ws.close();
+		        }
+	            if (numberOfRows > 0) {
+	            	ws = connection.prepareStatement(SQL_DELETE_WS);
+	    			ws.setInt(1, id);
+	    			ws.executeUpdate();
+	    			result = true;
+	            }
+	            else {
+	            	result = false;
+	            }
+			} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+		        if (ws != null) {
+		            ws.close();
+		        }
+		    }
+		return result;
+	}
+
+	public ArrayList<WeatherStationModel> allWS() throws SQLException{
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		wsList.clear();
+		try {
+			st = connection.prepareStatement(SQL_GET_DEVICES);
+			rs = st.executeQuery();
+			while (rs.next()) {
+						wsList.add(new WeatherStationModel(rs.getInt("ID"), rs.getString("NAME"), rs.getString("IP"),rs.getInt("PORT"), rs.getInt("INTERVAL"), rs.getString("SENSOR")));
+					}
+		}
+		finally{
+			if (st != null) {
+				st.close();
+	        }
+		}
+        return wsList;
+	}
+	
+	public boolean editUser(String name, Integer role, Integer id) throws SQLException{
+		boolean result = false;
+		try{
+    			Users = connection.prepareStatement(SQL_EDIT_USER);
+    			Users.setString(1,name);
+    			Users.setInt(2,role);
+    			Users.setInt(3,id);
+    			Users.executeUpdate();
+    			result = true;
+		} catch(SQLException e){
+			result = false;
+		} finally {
+	        if (Users != null) {
+	            Users.close();
+	        }
+		}
+		return result;
+	}
+	
+	public boolean deleteUsers(Integer id) throws SQLException{
+		boolean result = false;
+		RegisterUser = connection.prepareStatement(SQL_SELECT_USER);
+		RegisterUser.setLong(1,id);
+        int numberOfRows = RegisterUser.executeUpdate();
+        if (numberOfRows > 0) {
+			Users = connection.prepareStatement(SQL_DELETE_USER);
+			Users.setInt(1,id);
+			Users.executeUpdate();
+			result = true;
+		}
+		return result;
+	}
+	
+	public boolean insertRecording(Integer idDevice,String timeStamp, Double temp,Double pressure,Integer x,Integer y,Integer z,Integer acc, Integer idUser){
+		Boolean result = false;
+		try {
+			System.out.println("idDevice " + idDevice + " idUser "+ idUser + " timestamp " + timeStamp + " axis " + acc);
+			Recording = connection.prepareStatement(SQL_RECORD);
+			Recording.setInt(1,idDevice);
+			Recording.setString(2, timeStamp);
+			if(temp == null){
+				Recording.setNull(3, java.sql.Types.DOUBLE);
+			}else{
+				Recording.setDouble(3,temp);
+			}
+			if(pressure == null){
+				Recording.setNull(4, java.sql.Types.DOUBLE);
+			}else{
+				Recording.setDouble(4,pressure);
+			}
+			if(x == null){
+				Recording.setNull(5, java.sql.Types.INTEGER);
+				Recording.setNull(6, java.sql.Types.INTEGER);
+				Recording.setNull(7, java.sql.Types.INTEGER);
+			}else{
+				Recording.setInt(5,x);
+				Recording.setInt(6,y);
+				Recording.setInt(7,z);
+			}if(acc == null){
+				Recording.setNull(8, java.sql.Types.INTEGER);
+			}else{
+				Recording.setInt(8,acc);
+			}
+			Recording.setInt(9,idUser);
+			Recording.executeUpdate();
+			connection.commit();
+    			result = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			} finally {
+	        if (Recording != null) {
+	        	try {
+					Recording.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+	        }
+	        try {
+				connection.setAutoCommit(true);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+	    }
+		return result;
+	}
+
+	public static String hash256(String data) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(data.getBytes());
+        return bytesToHex(md.digest());
+    }
+    public static String bytesToHex(byte[] bytes) {
+        StringBuffer result = new StringBuffer();
+        for (byte byt : bytes) result.append(Integer.toString((byt & 0xff) + 0x100, 16).substring(1));
+        return result.toString();
+    }
+}

@@ -1,0 +1,173 @@
+############### Language ###############
+txtSelectLanguage = Select the language for the Weather Station program from the list below
+btnCancel = Cancel
+
+############### Register ###############
+registerTitle = Registration
+btnRegister = Register
+lblExampleEmail = Example: example@th-wildau.de
+lblReg1 = Please enter your username, password and e-mail address
+txtRePassword = Retype password
+txtEmail = E-mail
+alertTitleRegister = Registration
+alertContentRegister1 = Thank you
+alertContentRegister2 = for your registration. \nYou can log in now.
+errorNull = One or both passwords are null
+errorEmptyFields = Please fill out all required fields
+errorPasswordShort = Your password must have at least 4 characters
+errorPasswordNotMatch = Passwords do not match
+
+############### Log in ###############
+btnRegisterNow = Register now
+txtUserName = Username
+txtPassword = Password
+btnLogin = Log in
+menuBtnAdmin = Administrator
+menuBtnUser = User
+lblRegTxt=Did not register yet? Well then...
+errorEmpty = Please enter your username and password
+errorIncorrect = Username or password is incorrect
+lblForgotPasswd = Forgot password?
+
+############### E-mail verification ###############
+stageTitleVerification = E-mail verification
+txtEmail = E-mail
+btnEmailCheck = Check
+txtPin = PIN
+btnOk = OK
+help = Help
+btnCancel = Cancel
+lblTitleText = Get password PIN to your e-mail address
+sendPinWrongEmail = Please insert e-mail address in field!
+sendPinCorrect = E-mail exists!PIN code was sent on your e-mail address.
+emailSubject = Password reset code
+emailText = PIN for reseting your password is:
+titleAlert = Error
+emailAdressWrong = Please insert valid e-mail address!
+pinCodeCorrect = PIN code correct!  You can now change your account password
+pinCodeInCorrect = Entered PIN code code is not correct!
+noPinCode = Please insert correct PIN in field!
+noEmailAdress = Please insert e-mail address in field!
+stageTitlePassword = Set new password
+
+############### Password change ###############
+txtPasswordChange = New password
+txtRetype = Retype password
+lblTitle = Change password for your account
+alertTitle = Change password error
+nullText = Please fill all fields
+txtPasswordShort = Password is too short. Needs to have 4 characters
+alertTitleSuccess = Success
+passwordSuccess = Password changed successfully!
+passwordMatch = Passwords do not match
+
+############### Home ###############
+btnConnect = Connect
+btnHistorical = Historical
+btnLanguage = Language
+options = Options
+help = Help
+logOut = Log out
+userSettings = User settings
+
+############### Main panel ###############
+exit = Exit
+newRecord = New recording
+edit = Edit
+addWs = New Weather station
+editWs = Edit Weather station
+
+############### User settings ###############
+lblUserPane = Edit existing or delete selected user
+columnName = Name
+columnDate = Last login
+columnRole = Role
+columnDelete = Delete
+save = Save
+userAdmin = User/Admin
+delAction = Action delete
+deleteQ = Are you sure you want to complete this action?
+yes = Yes
+no = No
+warning = Warning
+input = Input
+selection = Selection
+selectUserFromTable = Please select one user from table!
+maxChar = Username must have maximum of 20 character\n entered username has
+errorSaving = Error when saving changes!
+editUser = Edit user
+editUserSucces = User edited successfully!
+
+############### Historical ###############
+lblBeginDate = Begin date:
+lblEndDate = End date:
+Temperature = Temperature
+AirPressure = Air pressure
+MagneticField = Magnetic
+Movement = Movement
+Show = Show
+WeatherStation = Weather station
+HectoPascal = Hectopascal
+days = day/s
+errorNoBeginDate = No begin date selected
+selectBeginDate = Please select a begin date in the date picker!
+errorNoEndDate = No end date selected
+selectEndDate = Please select an end date in the date picker!
+noData = No data
+noDataForWs = There is no data for the selected Weather station!
+
+############### New weather station ###############
+titleText = Add a new Weather station\n for your personal use.
+ipAdressFormat = Please type the IP address in correct format\n Example: 192.168.1.50
+WsExists = Weather station name or IP address exists!
+portNumber = Please type correct port number
+newWSAdd = New weather station added successfully!
+IpaddressLbl = IP address:
+NewWslbl = New Ws:
+Portlbl = Port:
+btnAdd = Add
+
+############### Edit weather station ###############
+titleTextEdit = Edit existing or delete selected Weather station.
+confirmation = Are you sure you want to complete this action?
+errorWsNamelenght = Weather station name must have maximum of 20 character\n entered name has
+erroNameOrIpEdit = Please enter different IP address or Ws name!
+EditWSAdd = Weather station edited successfully!
+ipColumn = IP address:
+lblEditWsName = Ws name:
+lblEditFreq = Real-time freq:
+btnEditSave = Save changes
+
+############### Recording ###############
+recordingTitle = Weather stations will directly store recorded measurements in the database.
+errorRecordingSelect = Select Weather station
+errorRecordingTextSelect = Please select preferred Weather station from drop down menu!
+warningRecordingTitle = Weather Station selection
+warningRecordingText =  is already added in recording parameters. Please select different Weather Station.
+warningSelectSensorsTitle = Select sensors
+wariningSelectSensorText = Please select preferred sensors for recording!
+warningClearTitle = Clear selection
+warningClearText = Please choose some elements from the table!
+treeTableName = Recording devices
+lblRecordBegin = Begin:
+lblrecordEnd = End:
+checkAirRecord = Air pressure
+checkMagRecord = Magnetic
+checkMovRecord = Movement
+checkTempRecord = Temperature
+btnAddCheckRecord = Add selection
+btnClearRecord = Clear selection
+radioHoursRecord = Hours
+radioMinutesRecord = Minutes
+
+############### DB ###############
+userExists = User exists!
+newWsError = New Weather station error
+nameOrIpExists = Device name or IP exists
+editWsError = Edited Weather station error
+editUserError = Error when editing user
+userNameExists = Username exists
+
+############### Client ###############
+serverError = Server Error
+noConnection = No connection to the selected Weather station!

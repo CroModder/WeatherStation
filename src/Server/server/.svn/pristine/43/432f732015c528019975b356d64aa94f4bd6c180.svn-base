@@ -1,0 +1,108 @@
+package controller;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.sql.SQLException;
+import java.util.Scanner;
+
+import org.json.JSONObject;
+
+public class FirstUse{
+	String fileName = "config.json";
+	Config config = new Config();
+	DbController dbController = new DbController();
+	Scanner in = new Scanner(System.in);
+
+	public void runServer(String mode){
+		if(exist()){
+			if (mode.equals("GUI")){
+				System.out.println("Starting server in GUI mode...");
+				// TODO Start GUI
+			}
+			else{
+				System.out.println("Starting server...");
+				try {
+					socket.Server.start();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		} else {
+			System.out.println("Starting server failed!");
+		}
+	}
+	
+	public boolean exist(){
+		Boolean exist = false;
+		File f = new File(fileName);
+		if(!f.exists()){
+		   installation();
+		   exist = true;
+		} else {
+			exist = true;
+			// TODO Read JSON
+		}
+		return exist;
+    }
+	public boolean installation(){
+		//JSONObject main = null;
+		String ip = "";
+		int port = 0;
+		int id = 0;
+		System.out.print("\u2554");
+		for (int i = 0; i < 37; i++) {System.out.print("\u2550");}
+		System.out.print("\u2557");
+		System.out.println("\n\u2551 Weather station installation wizard \u2551");
+		System.out.print("\u255A");
+		for (int i = 0; i < 37; i++) {System.out.print("\u2550");}
+		System.out.println("\u255D");
+		//config.dbInit();
+		//config.listMenu();
+		System.out.print("\nWeather Station name: ");
+    	String name = in.nextLine();
+    	try {
+			ServerSocket serverSocket= new ServerSocket(0);
+			ip = InetAddress.getLocalHost().getHostAddress();
+			port = serverSocket.getLocalPort();
+			serverSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	System.out.println("\nWeather Station installed successfully!\n\n\t Details\n============================\nID:\t\t"+ 
+		id +"\nName:\t\t" + name + "\nIP address:\t" + ip + "\nPort:\t\t" + port);
+    	System.out.print("\nStart the server? [y/n]\n> ");
+    	String start = in.nextLine();
+    	in.close();
+    	if (start.equals("y")) {
+			// TODO start server or close app
+		}
+    	else {
+    		System.exit(0);
+    	}
+		//try {
+			//dbController.newWs(name, ip, port, 1);
+		//} catch (SQLException e) {
+			//e.printStackTrace();
+		//}
+		//main.put("id", id);
+		//jsonWrite(main);
+		return true;
+	}
+	
+	private void jsonWrite(JSONObject main){
+		FileWriter file = null;
+		try {
+			file = new FileWriter(fileName);
+			file.write(main.toString());
+	        file.flush();
+	        file.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+}

@@ -1,0 +1,96 @@
+package controller;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+
+/**
+ * Server application
+ *
+ * @author
+ *      T13_SWP5 (T13S)
+ */
+public class Users {
+
+    @Option(name="-help" , usage="print this message")
+    private boolean help;
+
+    @Option(name="-ADD", usage="Go to users settings")
+    private boolean add;
+    
+    @Option(name="-EDIT", usage="Enter the device configuration menu")
+    private String edit;
+    
+    @Option(name="-DELETE", usage="Start server in the graphical mode")
+    private String delete;
+    
+    @Option(name="-LIST", usage="Start the server")
+    private String list;
+
+    // receives other command line parameters than options
+    @Argument
+    private List<String> arguments = new ArrayList<String>();
+    
+    CmdLineParser parser = new CmdLineParser(this);
+
+    public void doMain(String[] args) throws IOException {
+    	List<String> userinput = new ArrayList<String>();
+    	System.out.println("Ovo je users");
+    	String username;
+    	String password;
+    	String email;
+        int role;
+        Scanner in = new Scanner(System.in);
+        System.out.println("*** Users Settings ***");
+        parser.printUsage(System.out);
+    	System.out.println("[LIST] Options:\n-all\t\t\tList all users\n- <a-z>\tList users with specified first letter \n\nADD\t Add new user.\nEDIT <ID>\nDELETE <ID>");
+        System.out.print("Uneste ime: ");
+        username = in.nextLine();
+        userinput.add(username);
+        //age=in.nextInt();
+        in.close();            
+
+        // Prints name and age to the console
+        System.out.println("Name :"+username);
+        //System.out.println("Age :"+age);
+        
+    	parser = new CmdLineParser(this);
+        try {
+            // parse the arguments.
+            parser.parseArgument(userinput);
+            
+            if(!arguments.isEmpty()) {
+            	printUsage();
+            }
+
+        } catch( CmdLineException e ) {
+            System.err.println(e.getMessage());
+            System.err.println("Usage: [options...]");
+            System.err.println("Options:");
+            parser.printUsage(System.err);
+            System.err.println();
+
+            return;
+        }
+
+        if( help ) {
+        	System.out.println("Usage: [options...]");
+        	System.out.println("Options:");
+            parser.printUsage(System.out);
+        }
+    }
+
+	public void printUsage() {
+		System.err.println("- Invalid argument given!");
+    	System.err.println("Usage: [options...]");
+        System.err.println("Options:");
+        parser.printUsage(System.err);
+		
+	}
+}

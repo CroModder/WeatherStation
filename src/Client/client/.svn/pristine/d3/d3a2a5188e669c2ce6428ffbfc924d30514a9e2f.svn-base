@@ -1,0 +1,593 @@
+package controller;
+
+import java.io.IOException;
+import java.net.URL;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.Timer;
+import java.util.TimerTask;
+import org.json.JSONObject;
+import socket.Client;
+import model.TableViewSelection;
+import model.WeatherStationModel;
+import javafx.animation.RotateTransition;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Line;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.stage.Window;
+import javafx.scene.control.TableCell;
+import javafx.util.Callback;
+import javafx.util.Duration;
+
+public class MainPanelController implements Initializable{
+	
+	private DbController dbController = new DbController();
+	private static HomeController homeController = new HomeController();
+	private static HomeAdminController homeAdminController = new HomeAdminController();
+	private Boolean exec = false;
+	private Timer timer;
+	public TimerTask timerTask;
+	public Long averageInt = new Long(0);
+	private JSONObject object;
+	private ArrayList<String> allSeries = new ArrayList<String>();
+    private static final int MAX_DATA_POINTS = 15;
+    private LineChart.Series<Number, Number> series = new LineChart.Series<Number, Number>();
+    private LinkedHashMap<String, Double[]> deviceSocketList = new LinkedHashMap<String, Double[]>();
+    private int xSeriesData = 0;
+    private int oldValue = 25;
+    private NumberAxis xAxisTemp = new NumberAxis(0,MAX_DATA_POINTS,MAX_DATA_POINTS/10);
+    private NumberAxis yAxisTemp = new NumberAxis();
+    private NumberAxis xAxisMag = new NumberAxis(0,MAX_DATA_POINTS,MAX_DATA_POINTS/10);
+    private NumberAxis yAxisMag = new NumberAxis();
+    private NumberAxis xAxisAir = new NumberAxis(0,MAX_DATA_POINTS,MAX_DATA_POINTS/10);
+    private NumberAxis yAxisAir = new NumberAxis();
+    private LineChart<Number, Number> graphTemp = new LineChart<Number, Number>(xAxisTemp, yAxisTemp);
+    private LineChart<Number, Number> graphAir = new LineChart<Number, Number>(xAxisAir, yAxisAir);
+    private LineChart<Number, Number> graphMag = new LineChart<Number, Number>(xAxisMag, yAxisMag);
+	private Locale locale;
+	private ResourceBundle bundle;
+	private Window window = null;
+	public String wsName = "";
+	public ArrayList<String> wsNameDelete = new ArrayList<String>();
+	private Circle c1 = new Circle(60);
+	private Circle c2 = new Circle(60);
+	private Circle c3 = new Circle(60);
+	private Circle c4 = new Circle(60);
+	private Circle c5 = new Circle(60);
+	private Line line1 = new Line();
+	private Line line2 = new Line();
+	private Line line3 = new Line();
+	private Line line4 = new Line();
+	private Line line5 = new Line();
+	/*private RotateTransition rt1 = new RotateTransition(Duration.millis(1500), line1);*/
+	private RotateTransition rt2 = new RotateTransition(Duration.millis(1500), line2);
+	/*private RotateTransition rt3 = new RotateTransition(Duration.millis(1500), line3);
+	private RotateTransition rt4 = new RotateTransition(Duration.millis(1500), line4);
+	private RotateTransition rt5 = new RotateTransition(Duration.millis(1500), line5);*/
+	public void setExec(Boolean exec) {
+		this.exec = exec;
+	}
+	
+	public static HomeController getHomeController() {
+		return homeController;
+	}
+
+	public Timer getTimer() {
+		return timer;
+	}
+
+	public void setAverageInt(Long averageInt) {
+		this.averageInt = averageInt;
+	}
+
+	public static void setHomeController(HomeController homeController) {
+		MainPanelController.homeController = homeController;
+	}
+	
+	public static HomeAdminController getHomeAdminController() {
+		return homeAdminController;
+	}
+
+	public static void setHomeAdminController(
+			HomeAdminController homeAdminController) {
+		MainPanelController.homeAdminController = homeAdminController;
+	}
+
+	private static List<TableViewSelection> listSelection = new LinkedList<TableViewSelection>();
+	
+	public static void setListSelection(TableViewSelection test) {
+		Boolean duplicates = false;
+		for(int i=0;i<MainPanelController.listSelection.size();i++){
+			if(MainPanelController.listSelection.get(i).getIp() == test.getIp()){
+				if(test.getSelected() == false){
+					MainPanelController.listSelection.remove(i);
+					duplicates = true;
+				}
+			}
+		}
+		if(duplicates == false || MainPanelController.listSelection.size() == 0){
+			MainPanelController.listSelection.add(test);
+		}
+	}
+
+	@FXML
+	private SplitPane splitPane;
+	@FXML
+	private Menu menuExit;
+	@FXML
+	private MenuBar menuBarOptions;
+	@FXML
+	private MenuItem menuItemExit;
+	@FXML
+	private MenuItem menuItemLogOut;
+	@FXML
+	private Button btnRecord;
+	@FXML
+	private Button btnAddNewWs;
+	@FXML
+	private Button btnEditWs;
+	@FXML
+	private TableView<WeatherStationModel> tableWs;
+	@FXML
+	private TableColumn<WeatherStationModel, Boolean> tableColCheck;
+	@FXML
+	private TableColumn<WeatherStationModel, String> tableColWs;
+	@FXML
+	private MenuItem menuItemCelsius;
+	@FXML
+	private MenuItem menuItemFarenheit;
+	@FXML
+	private TabPane tabMainPanel;
+	@FXML
+	private Menu menuRecord;
+	@FXML
+	private StackPane movementPane1;
+	@FXML
+	private AnchorPane movementPaneBottom1;
+	@FXML
+	private StackPane movementPane2;
+	@FXML
+	private StackPane movementPane3;
+	@FXML
+	private StackPane movementPane4;
+	@FXML
+	private StackPane movementPane5;
+	@FXML
+	private RadioButton rbCelsius;
+	@FXML
+	private RadioButton rbFahrenheit;
+	@FXML
+    private Tab tabTemp;
+	@FXML
+    private Tab tabAirPressure;
+    @FXML
+    private Tab tabMagnetic;
+    @FXML
+    private Tab tabMovement;
+    @FXML
+    private RadioButton rbBar;
+    @FXML
+    private RadioButton rbHectopascal;  
+    @FXML
+    private Pane tempBorderPane;
+    @FXML
+    private Pane airBorderPane;
+    @FXML
+    private Pane magBorderPane;
+    
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {  
+
+	    /*xAxisTemp.setTickLabelsVisible(false);
+	    xAxisAir.setTickLabelsVisible(false);
+	    xAxisMag.setTickLabelsVisible(false);*/
+        tempBorderPane.getChildren().add(graphTemp);
+        airBorderPane.getChildren().add(graphAir);
+        magBorderPane.getChildren().add(graphMag);
+        graphTemp.setAnimated(false);
+        graphAir.setAnimated(false);
+        graphMag.setAnimated(false);
+        WeatherStationModel.setMainPanelController(this);
+        /*****************/
+    	locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+		System.out.print(locale);
+		menuExit.setText(bundle.getString("options"));
+		menuItemExit.setText(bundle.getString("exit"));
+		menuItemLogOut.setText(bundle.getString("logOut"));
+		btnRecord.setText(bundle.getString("newRecord"));
+		btnAddNewWs.setText(bundle.getString("btnAdd"));
+		btnEditWs.setText(bundle.getString("edit"));
+		tableColWs.setText(bundle.getString("WeatherStation"));
+		tabTemp.setText(bundle.getString("Temperature"));
+		tabAirPressure.setText(bundle.getString("AirPressure"));
+		tabMagnetic.setText(bundle.getString("MagneticField"));
+		tabMovement.setText(bundle.getString("Movement"));
+		rbHectopascal.setText(bundle.getString("HectoPascal"));
+		
+    	rbCelsius.setSelected(true);
+    	rbFahrenheit.setSelected(false);
+    	rbBar.setSelected(true);
+    	rbHectopascal.setSelected(false);
+    	
+	 	line1.setStartX(c1.getCenterX());
+		line1.setStartY(c1.getRadius()*2);
+		c1.setStroke(Color.BLACK);
+		c1.setFill(null);
+		c1.setStrokeWidth(3);
+		line1.setStrokeWidth(1.5);
+ 		movementPane1.getChildren().addAll(line1,c1);
+	 	line2.setStartX(c2.getCenterX());
+		line2.setStartY(c2.getRadius()*2);
+		c2.setStroke(Color.BLACK);
+		c2.setFill(null);
+		c2.setStrokeWidth(3);
+		line2.setStrokeWidth(1.5);
+ 		movementPane2.getChildren().addAll(line2,c2);
+	 	line3.setStartX(c3.getCenterX());
+		line3.setStartY(c3.getRadius()*2);
+		c3.setStroke(Color.BLACK);
+		c3.setFill(null);
+		c3.setStrokeWidth(3);
+		line3.setStrokeWidth(1.5);
+ 		movementPane3.getChildren().addAll(line3,c3);
+	 	line4.setStartX(c4.getCenterX());
+		line4.setStartY(c4.getRadius()*2);
+		c4.setStroke(Color.BLACK);
+		c4.setFill(null);
+		c4.setStrokeWidth(3);
+		line4.setStrokeWidth(1.5);
+ 		movementPane4.getChildren().addAll(line4,c4);
+ 		line5.setStartX(c5.getCenterX());
+		line5.setStartY(c5.getRadius()*2);
+		c5.setStroke(Color.BLACK);
+		c5.setFill(null);
+		c5.setStrokeWidth(3);
+		line5.setStrokeWidth(1.5);
+ 		movementPane5.getChildren().addAll(line5,c5);
+        
+        initTable();
+        Client.setMainPanelController(this);
+    }
+    
+    @SuppressWarnings("unchecked")
+	public void init() {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+            	if(allSeries.size() == 0){
+            		allSeries.add(wsName);
+            		series.setName(wsName);
+            		graphTemp.getData().addAll(series);
+            		series = new LineChart.Series<Number, Number>();
+            		series.setName(wsName);
+            		graphAir.getData().addAll(series);
+            		series = new LineChart.Series<Number, Number>();
+            		series.setName(wsName);
+            		graphMag.getData().addAll(series);
+            	}else{
+            		if(allSeries.contains(wsName) == false){
+            			allSeries.add(wsName);
+            			series = new LineChart.Series<Number, Number>();
+            			series.setName(wsName);
+            			graphTemp.getData().addAll(series);
+            			series = new LineChart.Series<Number, Number>();
+            			series.setName(wsName);
+            			graphAir.getData().addAll(series);
+            			series = new LineChart.Series<Number, Number>();
+            			series.setName(wsName);
+                		graphMag.getData().addAll(series);
+            			System.out.println(graphTemp.getData());
+            		}
+            	}
+            }});
+    }
+    
+    public void addDataToSeries() {
+    	timer = new Timer();
+    	timerTask = new TimerTask() {
+		    @Override
+		    public void run() {
+		    Platform.runLater(new Runnable() {
+	            @Override
+	            public void run() {
+	            	Object[] test = new String[deviceSocketList.size()];
+	            	test = deviceSocketList.keySet().toArray();
+    				int test1 = xSeriesData++;
+	            		for(int i=0;i<test.length;i++){
+	            			if(graphTemp.getData().get(i).getName().equals(test[i]) && wsNameDelete.contains(graphTemp.getData().get(i).getName()) == false){
+	            				if(rbCelsius.isSelected() == true){
+	            					graphTemp.getData().get(i).getData().add(new XYChart.Data<Number, Number>(test1, deviceSocketList.get(graphTemp.getData().get(i).getName().toString())[0]));
+	            				}else{
+	            					System.out.println("farenheit " + (deviceSocketList.get(graphTemp.getData().get(i).getName().toString())[0]*1.8)+32);
+	            					graphTemp.getData().get(i).getData().add(new XYChart.Data<Number, Number>(test1, ((deviceSocketList.get(graphTemp.getData().get(i).getName().toString())[0]*1.8)+32)));
+	            				}
+	            				if(rbHectopascal.isSelected() == true){
+	            					graphAir.getData().get(i).getData().add(new XYChart.Data<Number, Number>(test1, deviceSocketList.get(graphTemp.getData().get(i).getName().toString())[1]));
+	            				}else{
+	            					graphAir.getData().get(i).getData().add(new XYChart.Data<Number, Number>(test1, deviceSocketList.get(graphTemp.getData().get(i).getName().toString())[1]/1000));
+	            				}
+	            				graphMag.getData().get(i).getData().add(new XYChart.Data<Number, Number>(test1, deviceSocketList.get(graphTemp.getData().get(i).getName().toString())[2]));
+	            			}
+	            		}
+	        		    xAxisTemp.setLowerBound(xSeriesData-MAX_DATA_POINTS);
+	        		    xAxisTemp.setUpperBound(xSeriesData-1);
+	        		    xAxisAir.setLowerBound(xSeriesData-MAX_DATA_POINTS);
+	        		    xAxisAir.setUpperBound(xSeriesData-1);
+	        		    xAxisMag.setLowerBound(xSeriesData-MAX_DATA_POINTS);
+	        		    xAxisMag.setUpperBound(xSeriesData-1);
+	            }
+	       });
+		    };
+		};timer.schedule(timerTask,1000,averageInt);
+    }
+    
+    public void collectSensorData(String jsonText){
+    	if(jsonText != null){
+    		if(exec == false){
+    			addDataToSeries();
+    			exec = true;
+    		}
+			Double [] data = new Double[3];
+			object = new JSONObject(jsonText.toString());
+			data[0] = object.getDouble("temp");
+			data[1] = object.getDouble("air");
+			data[2] = object.getDouble("mag");
+			deviceSocketList.put(object.getString("wsName"), data);
+			if(object.getString("wsName").equals("sp15pi2")){
+				movementCalc(object.getInt("mov"));
+			}
+			System.out.println("move 3 " + object.getInt("mov"));
+    	}
+    }
+    
+    public void initTable(){
+    	ObservableList<WeatherStationModel> data = null;
+		try {
+			data = dbController.allWS(LogInController.getLogUserId());
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+
+		tableColCheck.setMinWidth(50);
+		tableColCheck.setCellValueFactory(new PropertyValueFactory<WeatherStationModel, Boolean>("selected"));
+		tableColCheck.setCellFactory(new Callback<TableColumn<WeatherStationModel, Boolean>, TableCell<WeatherStationModel, Boolean>>() {
+		    public TableCell<WeatherStationModel, Boolean> call(TableColumn<WeatherStationModel, Boolean> p) {
+		        return new CheckBoxTableCell<WeatherStationModel, Boolean>();
+		    }
+		});
+
+		tableColWs.setCellValueFactory(new PropertyValueFactory<WeatherStationModel, String>("name"));
+		tableWs.setItems(data);
+		tableWs.setEditable(true);
+    }
+    
+    private void movementCalc(Integer newValue){
+		if(newValue != null){
+    	    	Double izr = 0.0;
+    	    	izr = Double.valueOf(oldValue) - Double.valueOf(newValue);
+    	    	System.out.println("\nNegativno " + Double.valueOf(oldValue) + " " + Double.valueOf(newValue));
+    	    	rt2.setByAngle(izr * 11.25);
+    	    	rt2.play();
+		}
+		oldValue = newValue;
+    }
+    
+   /* public void deleteSeries(String nameSeries){
+    	Platform.runLater(new Runnable() {
+	        @Override
+	        public void run() {
+    	for(int i=0;i<lineChartData.size();i++){
+			System.out.println("petlja delete" + lineChartData.get(i).getName() + " " + nameSeries);
+    		if(lineChartData.get(i).getName() == "sp15pi2"){
+    			lineChartData.remove(i);
+    			test.remove(i);
+    			graphTemp.setData(lineChartData);
+    			System.out.println("treba obrisat " + lineChartData.get(i) + " " + graphTemp.getData().remove(i));
+    			 //graphTemp.getData().remove(i);
+    			 //lineChartData.remove(i);
+    		}
+    	}
+	        }
+	    });
+    	
+    }*/
+    
+    @FXML
+    private void getNode(MouseEvent event){
+    	window = ((Node)(event.getSource())).getScene().getWindow();
+    }
+    
+    @FXML
+    private void addNewWs(ActionEvent event) throws IOException, SQLException{
+    	BorderPane page = (BorderPane) FXMLLoader.load(getClass().getResource("/view/NewWeatherStationView.fxml"));
+	    Scene scene = new Scene(page);
+	    Stage stage = new Stage();
+	    stage.getIcons().add(new Image("img/WeatherStationLogo.png"));
+    	locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+	    stage.setTitle(bundle.getString("addWs"));
+	    stage.setResizable(false);
+	    stage.initModality(Modality.WINDOW_MODAL);
+	    stage.initOwner(((Node)event.getSource()).getScene().getWindow());
+	    stage.setScene(scene);
+	    stage.show();
+    }
+    
+    @FXML
+    private void editWs(ActionEvent event) throws IOException{
+    	BorderPane page1 = (BorderPane) FXMLLoader.load(getClass().getResource("/view/EditWeatherStationView.fxml"));
+	    Scene scene = new Scene(page1);
+	    Stage stage = new Stage();
+	    stage.getIcons().add(new Image("img/WeatherStationLogo.png"));
+	    locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+	    stage.setTitle(bundle.getString("editWs"));
+	    stage.setResizable(false);
+	    stage.initModality(Modality.WINDOW_MODAL);
+	    stage.initOwner(((Node)event.getSource()).getScene().getWindow());
+	    stage.setScene(scene);
+	    stage.show();
+    }
+    
+    @FXML
+    private void exit(ActionEvent event) throws IOException{
+    	if(window != null){
+    		for(int i=0;i<DbController.weatherStationData.size();i++){
+    			if(DbController.weatherStationData.get(i).selectedProperty().get() == true){
+    				DbController.weatherStationData.get(i).selectedProperty().set(false);
+    			}
+    		}
+        	window.hide();
+    	}
+    }
+    
+    @FXML
+    private void logOut(ActionEvent event) throws IOException{
+    	if(window != null){
+    		for(int i=0;i<DbController.weatherStationData.size();i++){
+    			if(DbController.weatherStationData.get(i).selectedProperty().get() == true){
+    				DbController.weatherStationData.get(i).selectedProperty().set(false);
+    			}
+    		}
+    		WeatherStationModel.deviceSocketList.clear();
+    		graphTemp.getData().clear();
+    		tempBorderPane.getChildren().clear();
+        	homeController.logOut();
+        	window.hide();
+    	}
+    }
+    
+    @FXML
+    private void recordParam(ActionEvent event) throws IOException{
+    	BorderPane page1 = (BorderPane) FXMLLoader.load(getClass().getResource("/view/RecordView.fxml"));
+	    Scene scene = new Scene(page1);
+	    Stage stage = new Stage();
+	    stage.getIcons().add(new Image("img/WeatherStationLogo.png"));
+	    bundle = ResourceBundle.getBundle("language.lang", locale);
+	    stage.setTitle(bundle.getString("newRecord"));
+	    stage.setResizable(false);
+	    stage.initModality(Modality.WINDOW_MODAL);
+	    stage.initOwner(((Node)event.getSource()).getScene().getWindow());
+	    stage.setScene(scene);
+	    stage.show();
+    }
+    
+    @FXML
+    void celsiusFahrenheit(ActionEvent event) {
+    	if(event.getSource().equals(rbCelsius)){
+    		for(int i=0;i<graphTemp.getData().size();i++){
+        		graphTemp.getData().get(i).getData().clear();
+    		}
+    		rbCelsius.setSelected(true);
+    		rbFahrenheit.setSelected(false);
+    	}
+    	else if(event.getSource().equals(rbFahrenheit)){
+    		for(int i=0;i<graphTemp.getData().size();i++){
+        		graphTemp.getData().get(i).getData().clear();
+    		}
+    		yAxisTemp.setUpperBound(350.0);
+    		yAxisTemp.setLowerBound(50.0);
+    		rbFahrenheit.setSelected(true);
+    		rbCelsius.setSelected(false);
+    	}
+    }
+    
+    @FXML
+    void barHectoPascal(ActionEvent event) {
+    	if(event.getSource().equals(rbBar)){
+    		for(int i=0;i<graphAir.getData().size();i++){
+    			graphAir.getData().get(i).getData().clear();
+    		}
+    		rbBar.setSelected(true);
+    		rbHectopascal.setSelected(false);
+    	}
+    	else if(event.getSource().equals(rbHectopascal)){
+    		for(int i=0;i<graphAir.getData().size();i++){
+    			graphAir.getData().get(i).getData().clear();
+    		}
+    		rbHectopascal.setSelected(true);
+    		rbBar.setSelected(false);
+    	}
+    }
+    
+    public class CheckBoxTableCell<S, T> extends TableCell<S, T> {
+        private final CheckBox checkBox;
+        private ObservableValue<T> ov;
+
+        public CheckBoxTableCell() {
+            this.checkBox = new CheckBox();
+            this.checkBox.setAlignment(Pos.CENTER);
+            setAlignment(Pos.CENTER);
+            setGraphic(checkBox);
+        } 
+         
+        @Override 
+        public void updateItem(T item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                setGraphic(checkBox);
+                if (ov instanceof BooleanProperty) {
+                    checkBox.selectedProperty().unbindBidirectional((BooleanProperty) ov);
+                }
+                ov = getTableColumn().getCellObservableValue(getIndex());
+                if (ov instanceof BooleanProperty) {
+                    checkBox.selectedProperty().bindBidirectional((BooleanProperty) ov);
+                }
+            }
+        }
+    }
+    
+    public void errorMessage(String title,String context){
+		Alert alert = new Alert(AlertType.ERROR); 
+	    alert.setTitle(title);
+	    alert.setHeaderText(null);
+	    alert.setContentText(context);
+	    alert.showAndWait();
+	}
+    
+}

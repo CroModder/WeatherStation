@@ -1,0 +1,87 @@
+package socket;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import org.json.JSONObject;
+
+import controller.MainPanelController;
+
+public class Client {
+	private Socket socket;
+	public static MainPanelController mainPanelController = new MainPanelController();
+	
+	 public static MainPanelController getMainPanelController() {
+		return mainPanelController;
+	}
+	public static void setMainPanelController(
+			MainPanelController mainPanelController) {
+		Client.mainPanelController = mainPanelController;
+	}
+	
+	public void initialize() {
+			try {
+				System.out.println("init");
+				socket = new Socket("localhost", 6040);
+			} catch (UnknownHostException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+	}
+	
+	public void dada(JSONObject object) throws IOException, InterruptedException {
+		System.out.println("\nRunning client...");
+		OutputStreamWriter writer= new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
+		System.out.println(object);
+		writer.write(object.toString() + "\n");
+		writer.flush();
+		new Thread(){
+			  public void run(){
+				  	System.out.println(object);
+					while(socket.isClosed() == false){
+			    		BufferedReader reader = null;
+						try {
+							reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+						} catch (UnsupportedEncodingException e2) {
+							e2.printStackTrace();
+						} catch (IOException e2) {
+							e2.printStackTrace();
+						}
+			    		String jsonText = null;
+						try {
+							jsonText = reader.readLine();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+			    		//System.out.println("client " + jsonText);
+						try {
+							mainPanelController.setChartTempData(jsonText);
+						} catch (FileNotFoundException e1) {
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+			    		if (object.getString("action") == "stop"){
+			    			try {
+			    				OutputStreamWriter writer= new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
+			    				writer.write(object.toString() + "\n");
+			    				writer.flush();
+								socket.close();
+								break;
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+			    		}
+					}
+			  }
+		}.start();
+	}
+
+}

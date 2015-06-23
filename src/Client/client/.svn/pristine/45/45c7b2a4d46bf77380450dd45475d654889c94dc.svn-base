@@ -1,0 +1,173 @@
+############### Language ###############
+txtSelectLanguage = Wählen Sie die Sprache für das Wetterstationprogramm aus der Liste unten
+btnCancel = Abbrechen
+
+############### Register ###############
+registerTitle = Registrierung
+btnRegister = Registrieren
+lblExampleEmail = Beispiel: beispiel@th-wildau.de
+lblReg1 = Bitte Benutzernamen, Passwort und E-mail Adresse eingeben
+txtRePassword = Passwort wiederholen
+txtEmail = E-mail
+alertTitleRegister = Registrierung
+alertContentRegister1 = Danke
+alertContentRegister2 = für Ihre Registrierung. \nSie können jezt einloggen.
+errorNull = Ein oder beide Passwörter sind null
+errorEmptyFields = Bitte alle erforderlichen Felder ausfüllen
+errorPasswordShort = Das Passwort muss mindestens 4 Zeichen haben
+errorPasswordsNotMatch = Passwörter stimmen nicht überein
+
+############### Log in ###############
+btnRegisterNow = Jetzt registrieren
+txtUserName = Benutzername
+txtPassword = Passwort
+btnLogin = Einloggen
+menuBtnAdmin = Administrator
+menuBtnUser = Benutzer
+lblRegTxt = Haben Sie sich noch nicht registriert? Worauf warten Sie...
+errorEmpty = Bitte geben Sie Ihren Benutzernamen und Passwort
+errorIncorrect = Benutzername oder Passwort sind nicht korrekt
+lblForgotPasswd = Passwort vergessen?
+
+############### E-mail verification ###############
+stageTitleVerification = E-mail Bestätigung
+txtEmail = E-mail
+btnEmailCheck = Prüfen
+txtPin = PIN
+btnOk = OK
+btnCancel = Abbrechen
+lblTitleText = PIN den Sie per E-mail bekommen haben
+sendPinWrongEmail = Bitte geben Sie Ihre E-Mail in das Feld !
+sendPinCorrect = E-mail existiert! PIN code wurde an Ihre Adresse geschickt.
+emailSubject = PIN zum Ändern des Passworts
+emailText = PIN für die Passwortänderung ist:
+titleAlert = Fehler
+emailAdressWrong = Bitte geben Sie eine richtige E-mail Adresse ein
+pinCodeCorrect = Der PIN ist richtig!  Jeztz können Sie Ihr Passwort ändern
+pinCodeInCorrect = Eingegebener PIN ist falsch
+noPinCode = Bitte geben Sie einen richtigen PIN ein
+noEmailAdress = Bitte geben Sie eine E-mail Adresse ein
+stageTitlePassword = Neues Passwort
+
+############### Password change ###############
+txtPassword = Neues Passwort
+txtRetype = Passwort wiederholen
+lblTitle = Das Passwort Ihres Kontos ändern
+alertTitle = Fehler
+nullText = Bitte alle Felder ausfüllen
+txtPasswordShort = Das Passwort muss mindestens 4 Zeichen haben
+alertTitleSuccess = Erfolg
+passwordSuccess = Passwortänderung erfolgreich!
+passwordMatch = Passwörter stimmen nicht überein
+
+############### Home ###############
+btnConnect = Verbinden
+btnHistorical = Historisch
+btnLanguage = Sprache
+options = Optionen
+help = Hilfe
+logOut = Ausloggen
+userSettings = Benutzereinstellungen
+
+############### Main panel ###############
+exit = Ausgang
+newRecord = Neue Aufnahme
+edit = Bearbeiten
+addWs = Neue Wetterstation
+editWs = Wetterstation bearbeiten
+
+############### User settings ###############
+lblUserPane = Bearbeiten Sie bestehende oder löschen Sie den ausgewählten Benutzer
+columnName = Name
+columnDate = Letzter login
+columnRole = Rolle
+columnDelete = Löschen
+save = Speichern
+userAdmin = Benutzer/Admin
+delAction = Aktion löschen
+deleteQ = Sind Sie sicher diese Aktion zu vollenden?
+yes = Ja
+no = Nein
+warning = Warnung
+input = Eingabe
+selection = Auswahl
+selectUserFromTable = Bitte wählen Sie einen Benutzer aus der Tabelle!
+maxChar = Benutzername darf maximal 20 Zeichen haben \n eingegebener Benutzername hat
+errorSaving = Fehler beim Speichern der Änderungen!
+editUser = Benutzer bearbeiten
+editUserSucces = Benutzer erfolgreich bearbeitet!
+
+############### Historical ###############
+lblBeginDate = Anfang:
+lblEndDate = Ende:
+Temperature = Temperatur
+AirPressure = Luftdruck
+MagneticField = Magnetisch
+Movement = Bewegung
+MeasurementUnit = Maßeinheit
+Show = Anzeigen
+WeatherStation = Wetterstation
+HectoPascal = Hektopascal
+days = Tag/e
+errorNoBeginDate = Kein Beginndatum ausgewählt
+selectBeginDate = Bitte wählen Sie ein Beginndatum in der Datumsauswahl!
+errorNoEndDate = Kein Enddatum ausgewählt
+selectEndDate = Bitte wählen Sie ein Enddatum in der Datumsauswahl!
+noData = Keine Daten
+noDataForWs = Es gibt keine Daten für die ausgewählte Wetterstation!
+
+############### New weather station ###############
+titleText = Fügen Sie eine neuen Wetterstation für Ihren persönlichen Gebrauch. 
+ipAdressFormat = Bitte geben Sie die IP -Adresse im richtigen Format Beispiel: 192.168.1.50
+WsExists = Der Name der Wetterstation oder die IP Adresse existieren!
+portNumber = Bitte geben Sie eine korrekte Portnummer ein
+newWSAdd = Neue Wetterstation erfolgreich hinzugefügt!
+IpaddressLbl = IP Adresse:
+NewWslbl = Neue Ws:
+Portlbl = Port:
+btnAdd = Hinzufügen
+
+############### Edit weather station ###############
+titleTextEdit = Bearbeiten Sie bestehende oder löschen Sie die ausgewählte Wetterstation.
+confirmation = Sind Sie sicher diese Aktion zu vollenden?
+errorWsNamelenght = Der Name der Wetterstation darf maximal 20 Zeichen haben \n eingegebener Name hat
+erroNameOrIpEdit = Bitte geben Sie eine andere IP-Adresse oder Ws Namen!
+EditWSAdd = Wetterstation erfolgreich bearbeitet!
+ipColumn = IP Adresse:
+lblEditWsName = Ws Name:
+lblEditFreq = Echtzeit freq:
+btnEditSave = Speichern
+
+############### Recording ###############
+recordingTitle = Wetterstationen werden aufgezeichnete Messungen direkt in die Datenbank speichern.
+errorRecordingSelect = Wetterstation wählen 
+errorRecordingTextSelect = Bitte wählen Sie eine Wetterstation vom Dropdown-Menü!
+warningRecordingTitle = Wetterstation Auswahl
+warningRecordingText =  ist bereits im Aufnahmeparameter hinzugefügt. Bitte wählen Sie eine andere Wetterstation.
+warningSelectSensorsTitle = Sensoren wählen
+wariningSelectSensorText = Bitte wählen Sie Sensoren zur Aufnahme!
+warningClearTitle = Auswahl löschen
+warningClearText = Bitte wählen Sie einige Elemente aus der Tabelle!
+treeTableName = Aufnahmegeräte
+lblRecordBegin = Beginn:
+lblrecordEnd = Ende:
+checkAirRecord = Luftdruck
+checkMagRecord = Magnetisch
+checkMovRecord = Bewegung
+checkTempRecord = Temperatur
+btnAddCheckRecord = Auswahl hinzufügen
+btnClearRecord = Auswahl löschen
+radioHoursRecord = Stunden
+radioMinutesRecord = Minuten
+
+############### DB ###############
+userExists = Benutzer existiert!
+newWsError = Neue Wetterstation Fehler
+nameOrIpExists = Gerätename oder IP existiert
+editWsError = Bearbeitete Wetterstation Fehler
+editUserError = Fehler bei Benutzerbearbeitung
+userNameExists = Benutzername existiert
+
+############### Client ###############
+serverError = Server-Fehler
+noConnection = Keine Verbindung zur ausgewählten Wetterstation!

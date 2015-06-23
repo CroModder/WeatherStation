@@ -1,0 +1,104 @@
+package socket;
+
+import de.tk.sensor.core.IAccelerometer;
+import de.tk.sensor.core.IMagnetometer;
+import de.tk.sensor.core.IMultiSensor;
+import de.tk.sensor.core.SensorFactory;
+import de.tk.sensor.core.IAccelerometer.AxisData;
+
+public class XtrinsicDemoApp {
+	public AxisData accelerometerData = null;
+	public Double magnetometerData = null;
+	public Integer magnetometerMovData = null;
+	public Double tempData = null;
+	public Double airData = null;
+	public Integer x = null;
+	public Integer y = null;
+	public Integer z = null;
+
+	public AxisData getAccelerometerData() {
+		return accelerometerData;
+	}
+
+	public Double getMagnetometerData() {
+		return magnetometerData;
+	}
+
+	public Integer getMagnetometerMovData() {
+		return magnetometerMovData;
+	}
+
+	public Double getTempData() {
+		return tempData;
+	}
+
+	public Double getAirData() {
+		return airData;
+	}
+
+	public Integer getX() {
+		return x;
+	}
+
+	public Integer getY() {
+		return y;
+	}
+
+	public Integer getZ() {
+		return z;
+	}
+
+	public void startInit() {
+    	System.out.println("initialize senor board");
+    	 SensorFactory board = SensorFactory.getInstance();
+         IAccelerometer accelerometer = board.getAccelerometer();
+         IMagnetometer magnetometer = board.getMagnetometer();
+         IMultiSensor multiSensor = board.getMultiSensor();
+         multiSensor.initBar();
+       //multiSensor.initAlt();
+    	sleepSave(1000);// wait a second until driver is initialized
+    	Thread one = new Thread() {
+    	    public void run() {
+    	        for(;;){
+					accelometer(accelerometer);
+					magnetometer(magnetometer);
+					multiSensor(multiSensor);
+					sleepSave(1000);
+	    		}
+	    	//print data every 1 seconds 
+    	    }  
+    	};
+    	one.start();   
+    }
+
+    private void accelometer(IAccelerometer accelerometer) {
+    	  accelerometerData = accelerometer.getData();
+/*        System.out.println("Accelerometer:\t" + data);
+*/    }
+
+    private void magnetometer(IMagnetometer magnetometer) {
+    	//magnetometerMov =  this.toString();
+    	magnetometerMovData = magnetometer.getOrientation();
+        x = magnetometer.getX();
+        y = magnetometer.getY();
+        z = magnetometer.getZ();
+        magnetometerData = Math.sqrt((x*x)+(y*y)+(z*z));
+       // System.out.println("Magnetometer:\tX=" + x + " uT \tY=" + y + " uT \tZ=" + z + " uT" );
+        //System.out.println("Heading: " + magnetometerMovData);
+    }
+
+    private void multiSensor(IMultiSensor multiSensor) {
+//      double alt = multiSensor.getAlt();
+    	tempData = multiSensor.getTemp();
+    	airData = multiSensor.getBar();
+//      System.out.println("Temp: " + temp + ", Alt: " + alt);
+        //System.out.println("Temp: " + tempData + ", Bar: " + airData);
+    }
+
+   static void sleepSave(long millis) { 
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+        }
+    }
+}

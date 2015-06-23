@@ -1,0 +1,338 @@
+package socket;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import controller.DbController;
+import de.tk.sensor.core.IAccelerometer.AxisData;
+
+public class Server {
+	private static DbController dbController = new DbController();
+	private static JSONObject object = new JSONObject();
+	private static boolean verified = false;
+	private static BufferedReader reader;
+	private static String jsonText;
+	private static XtrinsicDemoApp app = new XtrinsicDemoApp();
+	private static LinkedBlockingQueue<String> recordObject = new LinkedBlockingQueue<String>();
+	//private static LinkedBlockingDeque<JSONObject> recordObject = new LinkedBlockingDeque<JSONObject>();
+	private static Date date = new Date();
+	private static SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
+
+	public static void start() throws IOException {
+		dbController.dbInit();
+		app.startInit();
+		ServerSocket serverSocket= new ServerSocket(6040);
+		serverSocket.getInetAddress();
+		System.out.println("Server started at: " + InetAddress.getLocalHost() + " on port: " + serverSocket.getLocalPort());
+		try {
+			while (!Thread.interrupted()) {
+				System.out.println("New thread");
+				final Socket socket= serverSocket.accept();
+				startHandler(socket);
+			}
+		} finally {
+			serverSocket.close();
+		}
+	}
+
+	private static void startHandler(final Socket socket) {
+			Thread handler= new Thread(new Runnable()  {
+			private Timer timer = new Timer();
+			private TimerTask timerTask;
+			private boolean loopStop = false;
+			private String name = "";
+
+			public void run() {
+				while(!socket.isClosed()){
+					try {
+		        		if(socket.isClosed()){
+		        			System.out.println("Socket is closed!");
+					    	timerTask.cancel();
+					    	timer.purge();
+					    }
+			        	else {
+							reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+							jsonText = reader.readLine();
+							if(jsonText == null){
+								System.out.println("Closing the socket...");
+								closeSocket();
+							}
+							else {
+								System.out.println("server " + jsonText);
+							object= new JSONObject(jsonText);
+							System.out.println(object.toString());
+							switch(object.getString("action")) {
+							    case "auth":
+							    	try {
+										if(dbController.authCheck(object.getString("username"), object.getString("password"))){
+											verified = true;
+											loopStop = false;
+											name = object.getString("wsName");
+											sendData();
+										}else{
+											verified = false;
+										}
+									} catch (JSONException e) {
+										e.printStackTrace();
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+							        break;
+							    case "data":
+							    	loopStop = false;
+							        sendData();
+							        break;
+							    case "stop":
+							    	System.out.println("Stop data sending");
+							    	closeSocket();
+							    	loopStop = true;
+							        break;
+							    case "record":
+							    	String[] result = new String[2];
+							    	result = createConfig(object);
+									if(result[0].equals("true")){
+										recordObject.put(result[1]);
+										recordData();
+									}
+							    	break;
+							    default:
+							    	System.out.println("Ilegal action!");
+							    	break;
+							}
+							}
+			        	}
+					} catch (IOException | InterruptedException ex) {
+						ex.printStackTrace();
+						closeSocket();
+					}	    	
+			 
+				}
+			}
+			
+			private void sendData() {
+				//TODO get interval from DB
+					timerTask = new TimerTask() {
+					    @Override
+					    public void run() {
+					    	try {
+					    		if(loopStop == true){
+					    			timerTask.cancel();
+					    			timer.cancel();
+					    			timer.purge();
+					    		}else{
+					    			System.out.println("Air :" + app.getAirData());
+					    			System.out.println("Mag :" + app.getMagnetometerData());
+					    			System.out.println("Move : " + app.getMagnetometerMovData());
+					    			System.out.println("Temp : " + app.getTempData());
+					    			JSONObject objectCommand = new JSONObject();
+					    			objectCommand.put("wsName", name);
+					    			objectCommand.put("temp", app.getTempData());
+				            		objectCommand.put("mag", app.getMagnetometerData());
+				            		objectCommand.put("mov", app.getMagnetometerMovData());
+				            		objectCommand.put("air", app.getAirData());
+									OutputStreamWriter writer= new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
+									writer.write(objectCommand.toString() + "\n");
+									writer.flush();
+					    		}
+							} catch (Exception e) {
+							}
+					    };
+					};timer.schedule(timerTask,500,2000);
+			}
+			
+			
+			private void recordData() {
+				//TODO recording
+				Thread recordHandler= new Thread(new Runnable(){
+					@Override
+					public void run() {
+						try {
+							Long interval = null;
+							Timer timerRec = new Timer();
+							final String fileName = recordObject.take();
+							TimerTask taskRec = null;
+							//System.out.println(fileName);
+							File f = new File(fileName.toString()+".json");
+							//System.out.println(f.exists());
+							BufferedReader br = new BufferedReader(new FileReader(fileName.toString()+".json"));
+							String sCurrentLine;
+							StringBuilder stringObj = new StringBuilder();
+				 
+							while ((sCurrentLine = br.readLine()) != null) {
+								//System.out.println(sCurrentLine.toString());
+								stringObj.append(sCurrentLine.toString());
+							}
+							JSONObject main= new JSONObject(stringObj.toString());
+							interval = main.getLong("interval");
+							//System.out.println("interval " + interval);
+							
+							taskRec = new TimerTask() {
+					            @Override
+					            public void run() {
+					            	try {
+					            		Boolean endLife = true;
+					            		AxisData accelerometerData = null;
+					            		Integer magnetometerMovData = null;
+					            		Double magnetometerData = null;
+					            		Double tempData = null;
+					            		Double airData = null;
+					            		Integer x = null;
+					            		Integer y = null;
+					            		Integer z = null;
+						                Calendar cal = Calendar.getInstance();
+						                DateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
+						    			BufferedReader br = new BufferedReader(new FileReader(fileName.toString()+".json"));
+						    			String sCurrentLine;
+										StringBuilder stringObj = new StringBuilder();
+							 
+										while ((sCurrentLine = br.readLine()) != null) {
+											stringObj.append(sCurrentLine.toString());
+										}
+										JSONObject head= new JSONObject(stringObj.toString());
+										for(int i=0;i<head.getJSONArray("dates").length();i++){
+											System.out.println("array" + head.getJSONArray("dates").get(i) + " array lenght " + dateFormat.format(cal.getTime()));
+											if(head.getJSONArray("dates").get(i).equals(dateFormat.format(cal.getTime()))){
+												System.out.println("saljem podatke");
+												System.out.println("wsId " + head.getInt("wsId") + " timestamp " + dateFormat.format(cal.getTime()) +" userId " + head.getInt("id"));
+												for(int j=0;j<head.getJSONArray("sensors").length();j++){
+													endLife = false;
+													if(head.getJSONArray("sensors").get(j).equals("temp")){
+														tempData = app.getTempData();
+														System.out.println("Temp : " + app.getTempData());
+													}if(head.getJSONArray("sensors").get(j).equals("air")){
+														airData = app.getAirData();
+														System.out.println("Air :" + app.getAirData());
+													}if(head.getJSONArray("sensors").get(j).equals("mov")){
+														accelerometerData = app.getAccelerometerData();
+														System.out.println("Move : " + app.getMagnetometerMovData());
+													}if(head.getJSONArray("sensors").get(j).equals("mag")){
+														x = app.getX();
+														y = app.getY();
+														z = app.getZ();
+														System.out.println("Mag :" + " pomak x y z ");
+													}
+												}
+												dbController.insertRecording(head.getInt("wsId"), dateFormat.format(cal.getTime()), tempData, airData, x, y, z, accelerometerData, head.getInt("id"));
+												//Thread.sleep(1000);
+												break;
+											}
+										}
+										if(endLife == true){
+							    			timerRec.cancel();
+							    			timerRec.purge();
+										}
+									} catch (Exception e) {
+										// TODO: handle exception
+									}
+					            }
+					        };timerRec.scheduleAtFixedRate(taskRec, 1000, 3500);
+
+						} catch (Exception e) {
+							// TODO: handle exception
+						}
+					}
+				});recordHandler.start();
+				System.out.println("recording thread id: " + recordHandler.getId());
+			}
+			
+			private String[] createConfig(JSONObject config){
+				String[] result = new String[2];
+				JSONObject jsonFile = new JSONObject();
+				JSONArray jsonDates = new JSONArray();
+				FileWriter file = null;
+				Calendar bgDate = Calendar.getInstance();
+				Calendar enDate = Calendar.getInstance();
+				DateFormat dateFormat = new SimpleDateFormat("yy-MM-dd");
+				try {
+					bgDate.setTime(dateFormat.parse(config.getString("bgDate")));
+					enDate.setTime(dateFormat.parse(config.getString("enDate")));
+					while(bgDate.getTime().before(enDate.getTime())){
+						System.out.println(bgDate.getTime());
+						jsonDates.put(jsonDates.length(), dateFormat.format(bgDate.getTime()));
+						bgDate.add(Calendar.DATE, 1);
+					}
+					jsonFile.put("dates", jsonDates);
+					jsonFile.put("sensors", config.get("sensor"));
+					jsonFile.put("interval", config.get("interval"));
+					jsonFile.put("id", config.get("userId"));
+					jsonFile.put("wsId", config.get("wsId"));
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					result[0] = "false";
+					e.printStackTrace();
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					result[0] = "false";
+					e.printStackTrace();
+				}
+				try {
+					String fileDateName = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+					result[1] = "recordConf"+fileDateName;
+					file = new FileWriter("recordConf"+ fileDateName +".json");
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			    try {
+			        file.write(jsonFile.toString());
+			        System.out.println("Successfully Copied JSON Object to File...");
+			        result[0] = "true";
+			
+			    } catch (IOException e) {
+			    	result[0] = "false";
+			        e.printStackTrace();
+			
+			    }finally {
+			        try {
+						file.flush();
+					} catch (IOException e) {
+						result[0] = "false";
+						e.printStackTrace();
+					}
+			        try {
+						file.close();
+					} catch (IOException e) {
+						result[0] = "false";
+						e.printStackTrace();
+					}
+			    }
+				return result;
+			}
+			
+			private void closeSocket() {
+				try {
+					socket.close();
+					//TODO test
+					System.out.println(Thread.currentThread().getId());
+	    			Thread.currentThread().interrupt();
+				} catch (IOException ex) {
+
+				}
+			}
+		});
+		handler.start();
+		System.out.println("Thread ID: " + handler.getId() + " ,Thread Name: " + handler.getName());
+	}
+}

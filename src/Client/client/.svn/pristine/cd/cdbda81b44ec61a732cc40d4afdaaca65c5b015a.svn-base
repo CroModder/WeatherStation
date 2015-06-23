@@ -1,0 +1,924 @@
+package controller;
+
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import model.HistoricalWeatherStationModel;
+import model.UsersModel;
+import model.WeatherStationModel;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+
+public class DbController {
+	
+	private Locale locale;
+	private ResourceBundle bundle;
+	private ErrorLogController errorLogController = new ErrorLogController();
+	private static Connection connection = null;
+	private PreparedStatement RegisterUser = null;
+	private PreparedStatement LogInUser = null;
+	private PreparedStatement NewWs = null;
+	private PreparedStatement Ws = null;
+	private PreparedStatement Users = null;
+	private PreparedStatement ForgotPasswd = null;
+	private PreparedStatement Historical = null;
+	public static ObservableList<WeatherStationModel> weatherStationData = FXCollections.observableArrayList();
+	public static ObservableList<HistoricalWeatherStationModel> historyWeatherStationData = FXCollections.observableArrayList();
+	//private static ObservableList<HistoricalWeatherStationModel> historyCopy = FXCollections.observableArrayList();
+	public static ObservableList<UsersModel> usersData = FXCollections.observableArrayList();
+
+	private static final String SQL_REGISTER = "INSERT INTO USERS (NAME,ROLE,PASSWORD,EMAIL)" + " VALUES(?, ?, ?, ?)";
+	private static final String SQL_REGISTER_SELECT = "SELECT NAME FROM USERS WHERE NAME = ?";
+	private static final String SQL_LOGIN_SELECT = "SELECT ID, NAME, PASSWORD, ROLE FROM USERS WHERE NAME = ? AND PASSWORD = ? AND ROLE = ?";
+	private static final String SQL_NEW_WS = "INSERT INTO DEVICES (NAME,IP,PORT,IDUSER,INTERVAL)" + " VALUES(?, ?, ?, ?, ?)";
+	private static final String SQL_NEW_WS_SELECT = "SELECT DEVICES.ID, DEVICES.NAME, DEVICES.IP, DEVICES.PORT, DEVICES.INTERVAL, USERS.ROLE FROM DEVICES INNER JOIN USERS ON  USERS.ID = DEVICES.IDUSER WHERE DEVICES.IDUSER = 1 OR DEVICES.IDUSER = ? ORDER BY DEVICES.ID";
+	private static final String SQL_UPDATE_WS = "UPDATE DEVICES SET NAME = ?, IP = ?, PORT = ? WHERE ID = ?";
+	private static final String SQL_UPDATE_WS_ADMIN = "UPDATE DEVICES SET NAME = ?, IP = ?, PORT = ?, INTERVAL = ? WHERE ID = ?";
+	private static final String SQL_DELETE_WS = "DELETE FROM DEVICES WHERE ID = ?";
+	private static final String SQL_USER_ROLE = "SELECT ROLE FROM USERS WHERE ID = ?";
+	private static final String SQL_USER_ADMIN = "SELECT ID,NAME,ROLE,LASTLOGIN FROM USERS WHERE ROLE = 2 OR ROLE = 1 ORDER BY ID";
+	private static final String SQL_EDIT_USER = "UPDATE USERS SET NAME = ?, ROLE = ? WHERE ID = ?";
+	private static final String SQL_DELETE_USER = "DELETE FROM USERS WHERE ID = ?";
+	private static final String SQL_USERS_MAIL = "SELECT EMAIL FROM USERS WHERE EMAIL = ?";
+	private static final String SQL_USERS_PASSWDCODE = "UPDATE USERS SET PASSWDCODE = ? WHERE EMAIL = ?";
+	private static final String SQL_USERS_PIN_EMAIL = "SELECT ID FROM USERS WHERE EMAIL = ? AND PASSWDCODE = ?";
+	private static final String SQL_USERS_SETPASSWORD = "UPDATE USERS SET PASSWORD = ? WHERE ID = ?";
+	private static final String SQL_HISTORICAL_AP = "SELECT PRESSURE, TIMESTAMP FROM WEATHER WHERE TIMESTAMP BETWEEN to_date(?,'dd.mm.yyyy hh24:mi:ss') AND to_date(?,'dd.mm.yyyy hh24:mi:ss') AND IDDEVICE = ? AND IDUSER = ? ORDER BY TIMESTAMP ASC";
+	private static final String SQL_HISTORICAL_MAG = "SELECT MX, MY, MZ, TIMESTAMP FROM WEATHER WHERE TIMESTAMP BETWEEN to_date(?,'dd.mm.yyyy hh24:mi:ss') AND to_date(?,'dd.mm.yyyy hh24:mi:ss') AND IDDEVICE = ? AND IDUSER = ? ORDER BY TIMESTAMP ASC";
+	private static final String SQL_HISTORICAL_AC = "SELECT AX, AY, AZ, TIMESTAMP FROM WEATHER WHERE TIMESTAMP BETWEEN to_date(?,'dd.mm.yyyy hh24:mi:ss') AND to_date(?,'dd.mm.yyyy hh24:mi:ss') AND IDDEVICE = ? AND IDUSER = ? ORDER BY TIMESTAMP ASC";
+	private static final String SQL_HISTORICAL_TEMP = "SELECT TEMPERATURE, TIMESTAMP FROM WEATHER WHERE TIMESTAMP BETWEEN to_date(?,'dd.mm.yyyy hh24:mi:ss') AND to_date(?,'dd.mm.yyyy hh24:mi:ss') AND IDDEVICE = ? AND IDUSER = ? ORDER BY TIMESTAMP ASC";
+	
+	public boolean dbInit() throws IOException{
+		Boolean result;
+		try {
+			Class.forName("oracle.jdbc.driver.OracleDriver");
+			connection = DriverManager.getConnection("jdbc:oracle:thin:@194.95.45.165:1521:orcl","T13_SWP5","ss15_swp5");
+			System.out.print("\n initialize Db connection " + connection);
+			result = true;
+		} catch (Exception e) {
+            errorLogController.error(e.toString());
+			System.out.print("Database connection error!" + e);
+			result = false;
+		}
+		return result;
+	}
+	
+	public String[] logIn(String userName, String password, Integer userAdmin) throws Exception{
+		String [] result = new String[2];
+		ResultSet rs = null;
+		String hashPassword = hash256(password);
+		try {
+			connection.setAutoCommit(false);
+			LogInUser = connection.prepareStatement(SQL_LOGIN_SELECT);
+			LogInUser.setString(1,userName);
+			LogInUser.setString(2,hashPassword);
+			LogInUser.setInt(3, userAdmin);
+			rs = LogInUser.executeQuery();
+			connection.commit();
+			while (rs.next()) {
+				System.out.println(rs.getInt("ID"));
+				result[0] = "true";
+				result[1] = String.valueOf((rs.getInt("ID")));
+				WeatherStationModel.UserName = rs.getString("NAME");
+				WeatherStationModel.PasswordHash = hashPassword;
+			}
+		} catch (Exception e) {
+            errorLogController.error(e.toString());
+	        if (connection != null) {
+	            try {
+	                System.err.print("\n Log in Transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (LogInUser != null) {
+	        	LogInUser.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+
+		return result;
+	}
+	
+	public String[] register(String userName, String password, String email) throws SQLException{
+		locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+		boolean result = false;
+		String errorMessage = "";
+		
+		try {
+			connection.setAutoCommit(false);
+			RegisterUser = connection.prepareStatement(SQL_REGISTER_SELECT);
+			RegisterUser.setString(1,userName);
+            int numberOfRows = RegisterUser.executeUpdate();
+            if (numberOfRows == 0) {
+            	RegisterUser = connection.prepareStatement(SQL_REGISTER);
+    			RegisterUser.setString(1,userName);
+    			RegisterUser.setInt(2, 2);
+    			RegisterUser.setString(3,hash256(password));
+    			RegisterUser.setString(4,email);
+    			RegisterUser.executeUpdate();
+    			connection.commit();
+    			result = true;
+            }
+            else {
+            	result = false;
+            	errorMessage = bundle.getString("userExists");
+            }
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nTransaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (RegisterUser != null) {
+	            RegisterUser.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return new String[] {String.valueOf(result), errorMessage};
+	}
+	
+	public String[] newWs(String name, String ip, Integer port, Integer idUser, Integer interval) throws SQLException{
+		boolean result = false;
+		String errorMessage = "";
+		try {
+			System.out.println(interval);
+			connection.setAutoCommit(false);
+			NewWs = connection.prepareStatement(SQL_NEW_WS);
+			NewWs.setString(1,name);
+			NewWs.setString(2,ip);
+			NewWs.setInt(3,port);
+			NewWs.setInt(4,idUser);
+			NewWs.setInt(5,interval);
+			NewWs.executeUpdate();
+			connection.commit();
+			result = true;
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			errorMessage(bundle.getString("newWsError"), bundle.getString("nameOrIpExists"));
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nTransaction is being rolled back -> New Weather station\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep.getSQLState());
+	            }
+	        }
+	        result = false;
+	        errorMessage = String.valueOf(e);
+		}finally{
+			if (NewWs != null) {
+				NewWs.close();
+	        }
+	        connection.setAutoCommit(true);
+		}
+		return new String[] {String.valueOf(result),errorMessage};
+	}
+	
+	public String[] editWs(Integer id, String name, String ip, Integer port, Integer interval) throws SQLException{
+		locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+		boolean result = false;
+		String errorMessage = "";
+		try {
+			connection.setAutoCommit(false);
+			if(interval == 5){
+				NewWs = connection.prepareStatement(SQL_UPDATE_WS);
+				NewWs.setString(1,name);
+				NewWs.setString(2,ip);
+				NewWs.setInt(3,port);
+				NewWs.setInt(4,id);
+				NewWs.executeUpdate();
+				connection.commit();
+				result = true;
+			}else{
+				System.out.println("Interval : " + interval);
+				NewWs = connection.prepareStatement(SQL_UPDATE_WS_ADMIN);
+				NewWs.setString(1,name);
+				NewWs.setString(2,ip);
+				NewWs.setInt(3,port);
+				NewWs.setInt(4,interval);
+				NewWs.setInt(5,id);
+				NewWs.executeUpdate();
+				connection.commit();
+				result = true;
+			}
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            errorMessage(bundle.getString("editWsError"), bundle.getString("nameOrIpExists"));
+	        System.out.print(e.getMessage());
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nTransaction is being rolled back -> Update Weather station\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+	        result = false;
+	        errorMessage = String.valueOf(e);
+		}finally{
+			if (NewWs != null) {
+				NewWs.close();
+	        }
+	        connection.setAutoCommit(true);
+		}
+		return new String[] {String.valueOf(result),errorMessage};
+	}
+	
+	public boolean deleteWs(int position) throws SQLException{
+		boolean result = false;
+		try {
+			connection.setAutoCommit(false);
+			Ws = connection.prepareStatement(SQL_DELETE_WS);
+			Ws.setInt(1,weatherStationData.get(position).getId());
+			Ws.executeUpdate();
+			connection.commit();
+			result = true;
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			 System.out.print(e);
+		        if (connection != null) {
+		            try {
+		                System.err.print("\nTransaction is being rolled back -> Delete Weather station\n");
+		                connection.rollback();
+		            } catch(SQLException excep) {
+		            	 System.out.print(excep);
+		            }
+		        }
+		        result = false;
+		} finally{
+			if (Ws != null) {
+				Ws.close();
+	        }
+	        connection.setAutoCommit(true);
+		}
+		return result;
+	}
+
+	public ObservableList<WeatherStationModel> allWS(Integer idUser) throws SQLException{
+		ResultSet rs = null;
+		int sizeObsesrList = weatherStationData.size();
+		List<Integer> listID = new ArrayList<Integer>();
+		List<Integer> listIDDataBase = new ArrayList<Integer>();
+		if(sizeObsesrList > 0){
+			for(int i=0;i<sizeObsesrList;i++){
+				listID.add(weatherStationData.get(i).getId());
+			}
+		}
+		try {
+			connection.setAutoCommit(false);
+			NewWs = connection.prepareStatement(SQL_NEW_WS_SELECT);
+			NewWs.setInt(1,idUser);
+			rs = NewWs.executeQuery();
+			connection.commit();
+			while (rs.next()) {
+				if(sizeObsesrList > 0){
+					listIDDataBase.add(Integer.valueOf(rs.getInt("ID")));
+					if(listID.contains(rs.getInt("ID"))){
+						Boolean selectedSave = weatherStationData.get(listID.indexOf(rs.getInt("ID"))).getSelected().getValue();
+						weatherStationData.remove(listID.indexOf(rs.getInt("ID")));
+						weatherStationData.add(listID.indexOf(rs.getInt("ID")), new WeatherStationModel(selectedSave, rs.getInt("ID"), rs.getString("NAME"), rs.getString("IP"),rs.getInt("PORT"), rs.getInt("ROLE"), rs.getInt("INTERVAL")));
+					}
+					else if(listID.contains(rs.getInt("ID")) == false){
+						weatherStationData.add(new WeatherStationModel(false, rs.getInt("ID"), rs.getString("NAME"), rs.getString("IP"),rs.getInt("PORT"), rs.getInt("ROLE"), rs.getInt("INTERVAL")));
+						listID.add(Integer.valueOf(rs.getInt("ID")));
+					}
+				}
+				else{
+					weatherStationData.add(new WeatherStationModel(false, rs.getInt("ID"), rs.getString("NAME"), rs.getString("IP"),rs.getInt("PORT"), rs.getInt("ROLE"), rs.getInt("INTERVAL")));
+				}
+			}
+			listID.removeAll(listIDDataBase);
+			if(listID.size() > 0){
+				for(int i=0;i<listID.size();i++){
+					for(int j=0;j<weatherStationData.size();j++){
+						if(listID.get(i) == weatherStationData.get(j).getId()){
+							weatherStationData.remove(j);
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nTransaction is being rolled back -> List Weather station list\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		}
+		finally{
+			if (NewWs != null) {
+				NewWs.close();
+				listID.clear();
+				listIDDataBase.clear();
+	        }
+	        connection.setAutoCommit(true);
+		}
+        return weatherStationData;
+	}
+	
+	public ObservableList<HistoricalWeatherStationModel> historicalAllWs(Integer idUser) throws SQLException{
+		ResultSet rs = null;
+		try {
+			connection.setAutoCommit(false);
+			NewWs = connection.prepareStatement(SQL_NEW_WS_SELECT);
+			NewWs.setInt(1,idUser);
+			rs = NewWs.executeQuery();
+			connection.commit();
+			historyWeatherStationData.clear();
+			while (rs.next()) {
+				historyWeatherStationData.add(new HistoricalWeatherStationModel(false, rs.getInt("ID"), rs.getString("NAME"), rs.getString("IP"),rs.getInt("PORT"), rs.getInt("ROLE")));
+			}
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nTransaction is being rolled back -> List history Weather station list\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		}
+		finally{
+			if (NewWs != null) {
+				NewWs.close();
+	        }
+	        connection.setAutoCommit(true);
+		}
+        return historyWeatherStationData;
+	}
+	
+	public int roleUser(int id) throws SQLException{
+		int userRole = 0;
+		ResultSet rs = null;
+		try {
+			connection.setAutoCommit(false);
+			LogInUser = connection.prepareStatement(SQL_USER_ROLE);
+			LogInUser.setInt(1,id);
+			LogInUser.executeUpdate();
+			connection.commit();
+            rs = LogInUser.executeQuery();
+            while(rs.next()){
+            	userRole = rs.getInt("ROLE");
+            }
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nTransaction is being rolled back user role\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (LogInUser != null) {
+	        	LogInUser.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		
+		return userRole;
+	}
+	
+	public ObservableList<UsersModel> allUsers() throws SQLException {
+		ResultSet rs = null;
+		try {
+			locale = new Locale(Language.getLanguage());
+	    	bundle = ResourceBundle.getBundle("language.lang", locale);
+			connection.setAutoCommit(false);
+			Users = connection.prepareStatement(SQL_USER_ADMIN);
+			rs = Users.executeQuery();
+			connection.commit();
+			usersData.clear();
+			while (rs.next()) {
+				if(rs.getInt("ROLE") == 1){
+					usersData.add(new UsersModel(rs.getInt("ID"), rs.getString("NAME"),rs.getDate("LASTLOGIN"),bundle.getString("menuBtnAdmin")));
+				}else{
+					usersData.add(new UsersModel(rs.getInt("ID"), rs.getString("NAME"),rs.getDate("LASTLOGIN"),bundle.getString("menuBtnUser")));
+				}
+			}
+		} catch (SQLException e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			if (connection != null) {
+	            try {
+	                System.err.print("\nTransaction is being rolled back user role\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (Users != null) {
+	        	Users.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return usersData;
+	}
+	
+	public String[] editUser(String name, Integer role, Integer id) throws SQLException{
+		locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+		boolean result = false;
+		String errorMessage = "";
+		try {
+			connection.setAutoCommit(false);
+			Users = connection.prepareStatement(SQL_EDIT_USER);
+			Users.setString(1,name);
+			Users.setInt(2,role);
+			Users.setInt(3,id);
+			Users.executeUpdate();
+			connection.commit();
+			result = true;
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+            errorMessage(bundle.getString("editUserError"), bundle.getString("userNameExists"));
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nTransaction is being rolled back -> Update user\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep.getSQLState());
+	            }
+	        }
+	        result = false;
+	        errorMessage = String.valueOf(e);
+		}finally{
+			if (Users != null) {
+				Users.close();
+	        }
+	        connection.setAutoCommit(true);
+		}
+		return new String[] {String.valueOf(result),errorMessage};
+	}
+	
+	public boolean deleteUsers(Integer id) throws SQLException{
+		boolean result = false;
+		try {
+			connection.setAutoCommit(false);
+			Users = connection.prepareStatement(SQL_DELETE_USER);
+			Users.setInt(1,id);
+			Users.executeUpdate();
+			connection.commit();
+			result = true;
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			 System.out.print(e);
+		        if (connection != null) {
+		            try {
+		                System.err.print("\nTransaction is being rolled back -> Delete User\n");
+		                connection.rollback();
+		            } catch(SQLException excep) {
+		            	 System.out.print(excep);
+		            }
+		        }
+		        result = false;
+		} finally{
+			if (Users != null) {
+				Users.close();
+	        }
+	        connection.setAutoCommit(true);
+		}
+		return result;
+	}
+	
+	public boolean emailCheck(String email, Integer passwdCode) throws SQLException{
+		locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+		boolean result = true;
+		try {
+			connection.setAutoCommit(false);
+			ForgotPasswd = connection.prepareStatement(SQL_USERS_MAIL);
+			System.out.println(email);
+			ForgotPasswd.setString(1,email);
+            int numberOfRows = ForgotPasswd.executeUpdate();
+            if (numberOfRows == 0) {
+            	System.out.println("nema");
+    			result = false;
+            	errorMessage(bundle.getString("titleAlert"), bundle.getString("emailAdressWrong"));
+            }
+            else {
+			connection.setAutoCommit(false);
+            	ForgotPasswd = connection.prepareStatement(SQL_USERS_PASSWDCODE);
+    			System.out.println("ima " + passwdCode + " " + email);
+    			ForgotPasswd.setInt(1,passwdCode);
+    			ForgotPasswd.setString(2,email);
+    			ForgotPasswd.executeUpdate();
+    			connection.commit();
+            	result = true;
+            }
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nEmail check transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (ForgotPasswd != null) {
+	        	ForgotPasswd.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return result;
+	}
+	
+	public boolean passwdCheck(String email, Integer passwd) throws SQLException{
+		boolean result = false;
+		ResultSet rs = null;
+		try {
+			connection.setAutoCommit(false);
+			ForgotPasswd = connection.prepareStatement(SQL_USERS_PIN_EMAIL);
+			ForgotPasswd.setString(1,email);
+			ForgotPasswd.setInt(2,passwd);
+			rs = ForgotPasswd.executeQuery();
+			while(rs.next()){
+				System.out.println(rs.getInt("ID"));
+				result = true;
+				ForgotPasswordController.setUserId(rs.getInt("ID"));
+			}
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nPasswdcode check transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (ForgotPasswd != null) {
+	        	ForgotPasswd.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return result;
+	}
+	
+	public boolean changePassword(Integer id, String password) throws SQLException{
+		boolean result = false;
+		try {
+			System.out.println("password " + password + " id " + id);
+			connection.setAutoCommit(false);
+			ForgotPasswd = connection.prepareStatement(SQL_USERS_SETPASSWORD);
+			ForgotPasswd.setString(1,hash256(password));
+			ForgotPasswd.setInt(2,id);
+			ForgotPasswd.executeUpdate();
+			connection.commit();
+			System.out.println("change password");
+			result = true;
+		} catch (Exception e) {
+			result = false;
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				result = false;
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nChange password transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            	 result = false;
+	            }
+	        }
+		} finally {
+	        if (ForgotPasswd != null) {
+	        	ForgotPasswd.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return result;
+	}
+	
+	public LineChart.Series<String, Number> historicalDataTemp(String begin, String end, Integer idDevice, Integer idUser, String radioSelection) throws SQLException{
+		ResultSet rs = null;
+		LineChart.Series<String, Number> series = new LineChart.Series<String, Number>();
+		try {
+			System.out.println(begin + " " + end);
+			connection.setAutoCommit(false);
+			Historical = connection.prepareStatement(SQL_HISTORICAL_TEMP);
+			Historical.setString(1,begin);
+			Historical.setString(2,end);
+			Historical.setInt(3,idDevice);
+			Historical.setInt(4,idUser);
+			rs = Historical.executeQuery();
+			connection.commit();
+			while(rs.next()){
+				if(radioSelection.equals("rbCelsius")){
+					series.getData().add(new XYChart.Data<String, Number>(rs.getString("TIMESTAMP"), rs.getFloat("TEMPERATURE")));
+					System.out.println("DB " + rs.getString("TIMESTAMP"));
+				}else{
+					series.getData().add(new XYChart.Data<String, Number>(rs.getString("TIMESTAMP"), (Double.valueOf(rs.getFloat("TEMPERATURE")) * 1.8) + 32));
+				}
+			}
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nHistorical transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (Historical != null) {
+	        	Historical.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		System.out.println("db series controller temp" + series.getData());
+		return series;
+	}
+	
+	public LineChart.Series<String, Number> historicalDataAirP(String begin, String end, Integer idDevice, Integer idUser, String radioSelection) throws SQLException{
+		ResultSet rs = null;
+		LineChart.Series<String, Number> series = new LineChart.Series<String, Number>();
+		try {
+			connection.setAutoCommit(false);
+			Historical = connection.prepareStatement(SQL_HISTORICAL_AP);
+			Historical.setString(1,begin);
+			Historical.setString(2,end);
+			Historical.setInt(3,idDevice);
+			Historical.setInt(4,idUser);
+			rs = Historical.executeQuery();
+			connection.commit();
+			while(rs.next()){
+				if(radioSelection.equals("rbBar")){
+					series.getData().add(new XYChart.Data<String, Number>(rs.getString("TIMESTAMP"), Double.valueOf(rs.getFloat("PRESSURE"))));
+				}else{
+					series.getData().add(new XYChart.Data<String, Number>(rs.getString("TIMESTAMP"), Double.valueOf(rs.getFloat("PRESSURE") * 100000)));
+				}
+			}
+			System.out.println(series.getData());
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nHistorical transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (Historical != null) {
+	        	Historical.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return series;
+	}
+	
+	public LineChart.Series<String, Number> historicalDataMag(String begin, String end, Integer idDevice, Integer idUser) throws SQLException{
+		ResultSet rs = null;
+		double teslaXYZ;
+		LineChart.Series<String, Number> series = new LineChart.Series<String, Number>();
+		try {
+			connection.setAutoCommit(false);
+			Historical = connection.prepareStatement(SQL_HISTORICAL_MAG);
+			Historical.setString(1,begin);
+			Historical.setString(2,end);
+			Historical.setInt(3,idDevice);
+			Historical.setInt(4,idUser);
+			rs = Historical.executeQuery();
+			connection.commit();
+			while(rs.next()){
+				teslaXYZ = Math.sqrt((Double.valueOf(rs.getFloat("MX"))*Double.valueOf(rs.getFloat("MX")))+(Double.valueOf(rs.getFloat("MY"))*Double.valueOf(rs.getFloat("MY")))+(Double.valueOf(rs.getFloat("MZ"))*Double.valueOf(rs.getFloat("MZ"))));
+				series.getData().add(new XYChart.Data<String, Number>(rs.getString("TIMESTAMP"),teslaXYZ));
+			}
+			System.out.println(series.getData());
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nHistorical transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (Historical != null) {
+	        	Historical.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return series;
+	}
+	
+	/*public ArrayList<LineChart.Series<String, Number>> getHistoricalDateForSelectedWs(Integer idUser,Integer idTab,String begin, String end) throws SQLException, InterruptedException{
+		ArrayList<LineChart.Series<String, Number>> listOLists = new ArrayList<LineChart.Series<String, Number>>();
+		List<Integer> listID = new ArrayList<Integer>();
+		for(int j=0;j<historyWeatherStationData.size();j++){
+			if(historyCopy.size() > 0){
+				if(historyCopy.get(j).getSelected().getValue() != historyWeatherStationData.get(j).getSelected().getValue()){
+					listID.add(historyWeatherStationData.get(j).getId());
+				}
+			}
+		}
+		for(int i=0;i<listID.size();i++){
+			if(historyWeatherStationData.get(i).getSelected().get() == true){
+				if(idTab == 0){
+					listOLists.add(getHistoricalData(SQL_HISTORICAL_TEMP, idUser, historyWeatherStationData.get(i).getId(), begin, end));
+					Thread.sleep(500);
+				}else if(idTab == 1){
+					listOLists.add(getHistoricalData(SQL_HISTORICAL_AP, idUser, historyWeatherStationData.get(i).getId(), begin, end));
+					Thread.sleep(500);
+				}else if(idTab == 2){
+					listOLists.add(getHistoricalData(SQL_HISTORICAL_MAG, idUser, historyWeatherStationData.get(i).getId(), begin, end));
+					Thread.sleep(500);
+				}else{
+					listOLists.add(getHistoricalData(SQL_HISTORICAL_AC, idUser, historyWeatherStationData.get(i).getId(), begin, end));
+					Thread.sleep(500);
+				}
+			}
+
+		}
+
+		return listOLists;
+	}
+	
+	public LineChart.Series<String, Number> getHistoricalData(String statement, Integer idUser,Integer idDevice,String begin, String end) throws SQLException{
+		ResultSet rs = null;
+		LineChart.Series<String, Number> series = new LineChart.Series<String, Number>();
+		try {
+			connection.setAutoCommit(false);
+			Historical = connection.prepareStatement(statement);
+			Historical.setString(1,begin);
+			Historical.setString(2,end);
+			Historical.setInt(3,idDevice);
+			Historical.setInt(4,idUser);
+			rs = Historical.executeQuery();
+			connection.commit();
+			while(rs.next()){
+				if(statement.equals("SQL_HISTORICAL_TEMP")){
+					series.getData().add(new XYChart.Data<String, Number>(rs.getDate("TIMESTAMP").toString(), Double.valueOf(rs.getFloat("TEMPERATURE"))));
+				}else if(statement.equals("SQL_HISTORICAL_AP")){
+					//series.getData().add(new XYChart.Data<String, Number>(rs.getDate("TIMESTAMP").toString(), Double.valueOf(rs.getFloat("AX")),Double.valueOf(rs.getFloat("AX")),Double.valueOf(rs.getFloat("AX"))));
+				}else if(statement.equals("SQL_HISTORICAL_MAG")){
+					series.getData().add(new XYChart.Data<String, Number>(rs.getDate("TIMESTAMP").toString(), Double.valueOf(rs.getFloat("TEMPERATURE"))));
+				}else{
+					series.getData().add(new XYChart.Data<String, Number>(rs.getDate("TIMESTAMP").toString(), Double.valueOf(rs.getFloat("TEMPERATURE"))));
+				}
+			}
+			System.out.println(series.getData());
+		} catch (Exception e) {
+            try {
+				errorLogController.error(e.toString());
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+	        System.out.print(e);
+	        if (connection != null) {
+	            try {
+	                System.err.print("\nHistorical transaction is being rolled back\n");
+	                connection.rollback();
+	            } catch(SQLException excep) {
+	            	 System.out.print(excep);
+	            }
+	        }
+		} finally {
+	        if (Historical != null) {
+	        	Historical.close();
+	        }
+	        connection.setAutoCommit(true);
+	    }
+		return series;
+	}*/
+	
+	private void errorMessage(String title,String context){
+		Alert alert = new Alert(AlertType.ERROR); 
+	    alert.setTitle(title);
+	    alert.setHeaderText(null);
+	    alert.setContentText(context);
+	    alert.showAndWait();
+	}
+
+	public static String hash256(String data) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        md.update(data.getBytes());
+        return bytesToHex(md.digest());
+    }
+    public static String bytesToHex(byte[] bytes) {
+        StringBuffer result = new StringBuffer();
+        for (byte byt : bytes) result.append(Integer.toString((byt & 0xff) + 0x100, 16).substring(1));
+        return result.toString();
+    }
+}

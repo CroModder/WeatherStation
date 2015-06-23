@@ -1,0 +1,85 @@
+package model;
+
+import controller.MainPanelController;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+
+public class WeatherStationModel {
+	
+	BooleanProperty selected;
+	private Integer id;
+	private String name;
+    private String ip;
+    private Integer port;
+    private Integer role;
+    
+    public WeatherStationModel(boolean selected, Integer id, String name, String ip,Integer port, Integer role) {
+    	this.selected = new SimpleBooleanProperty(selected);
+    	this.id = id;
+        this.name = name;
+        this.ip = ip;
+        this.port = port;
+        this.role = role;
+        this.selected = new SimpleBooleanProperty(selected);
+        
+        this.selected.addListener(new ChangeListener<Boolean>() {
+            public void changed(ObservableValue<? extends Boolean> ov, Boolean t, Boolean t1) {
+            	System.out.println("Selection: " + t1 + " For Ws: " + id + " " + ip + " " + port);
+                MainPanelController.setListSelection(new TableViewSelection(t1, id, ip, port));
+            }
+        });            
+    }
+    
+    public Integer getRole() {
+		return role;
+	}
+
+	public void setRole(Integer role) {
+		this.role = role;
+	}
+
+	public BooleanProperty selectedProperty() { return selected; }
+
+	public BooleanProperty getSelected() {
+		return selected;
+	}
+
+	public void setSelected(BooleanProperty selected) {
+		this.selected = selected;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
+	public Integer getPort() {
+		return port;
+	}
+
+	public void setPort(Integer port) {
+		this.port = port;
+	}
+
+}

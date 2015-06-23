@@ -1,0 +1,586 @@
+package controller;
+
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import model.HistoricalWeatherStationModel;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.geometry.Pos;
+import javafx.scene.chart.CategoryAxis;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.Alert;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.DateCell;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.SingleSelectionModel;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.text.Text;
+import javafx.util.Callback;
+public class HistoricalController {
+
+	private LineChart.Series<String, Number> series = new LineChart.Series<String, Number>();
+	private ArrayList<LineChart.Series<String, Number>> elements = new ArrayList<>();
+	private String[] nameSeries;
+	private String radioSelection = null;
+	private DbController dbController = new DbController();
+	private Locale locale;
+	private ResourceBundle bundle;
+	private LocalDate dateDatePicker = null;
+	private Date resBegin = null;
+	private Date resEnd = null;
+	private Instant instant = null;
+	public String beginDate = "";
+	public String endDate = "";
+	public static SingleSelectionModel<Tab> selectionModel = null;
+    private CategoryAxis xAxis = new CategoryAxis();
+    private NumberAxis yAxis = new NumberAxis();
+    private LineChart<String,Number> lineChart = new LineChart<String, Number>(xAxis,yAxis);
+    private LineChart<String,Number> lineChartAir = new LineChart<String, Number>(xAxis,yAxis);
+	private LineChart<String,Number> lineChartMag = new LineChart<String, Number>(xAxis,yAxis);
+    private LineChart<String,Number> lineChartAcc = new LineChart<String, Number>(xAxis,yAxis);
+	private ObservableList<String> datexAxsis= FXCollections.observableArrayList();
+    private List<String> dates = new ArrayList<String>();
+    private Integer tabIndex = 0;
+    
+    public LineChart<String, Number> getLineChartAir() {
+		return lineChartAir;
+	}
+
+	public void setLineChartAir(LineChart<String, Number> lineChartAir) {
+		this.lineChartAir = lineChartAir;
+	}
+
+	public LineChart<String, Number> getLineChartMag() {
+		return lineChartMag;
+	}
+
+	public void setLineChartMag(LineChart<String, Number> lineChartMag) {
+		this.lineChartMag = lineChartMag;
+	}
+
+	public LineChart<String, Number> getLineChartAcc() {
+		return lineChartAcc;
+	}
+
+	public void setLineChartAcc(LineChart<String, Number> lineChartAcc) {
+		this.lineChartAcc = lineChartAcc;
+	}
+    
+    public Integer getTabIndex() {
+		return tabIndex;
+	}
+
+	public void setTabIndex(Integer tabIndex) {
+		this.tabIndex = tabIndex;
+	}
+
+	public LineChart<String, Number> getLineChart() {
+		return lineChart;
+	}
+
+	public void setLineChart(LineChart<String, Number> lineChart) {
+		this.lineChart = lineChart;
+	}
+	
+	public String getBeginDate() {
+		return beginDate;
+	}
+
+	public void setBeginDate(String beginDate) {
+		this.beginDate = beginDate;
+	}
+
+	public String getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(String endDate) {
+		this.endDate = endDate;
+	}
+	
+	public String getRadioSelection() {
+		return radioSelection;
+	}
+
+	public void setRadioSelection(String radioSelection) {
+		this.radioSelection = radioSelection;
+	}
+	
+	@FXML
+    private Tab tabTemperature;
+	@FXML
+	private LineChart<String, Number> testChart;
+	@FXML
+	private CategoryAxis dateAxis;
+	@FXML
+	private CategoryAxis dateAxisAir;
+	@FXML
+	private CategoryAxis dateAxisMag;
+	@FXML
+	private CategoryAxis dateAxisAcc;
+	@FXML 
+	private LineChart<String, Number> graphAirPressure;
+	@FXML
+    private Tab tabAirPressure;
+	@FXML 
+	private LineChart<String, Number> graphMagneticField;
+	@FXML
+	private LineChart<String, Number> graphMovement;
+	@FXML
+    private Tab tabMagneticField;
+	@FXML
+    private Tab tabMovement;
+    @FXML
+    private DatePicker dpBeginDate;
+    @FXML
+    private DatePicker dpEndDate;
+    @FXML
+    private RadioButton rbBar;
+    @FXML
+    private RadioButton rbHectoPascal;
+    @FXML
+    private RadioButton rbCelsius;
+    @FXML
+    private RadioButton rbFahrenheit;
+    @FXML
+    private Text lblMeasurementUnitTemp;
+    @FXML
+    private Text lblMeasurementUnitAirP;
+    @FXML
+    private MenuItem menuItemBar;
+    @FXML
+    private MenuItem menuItemhPa;
+    @FXML
+    private Label lblBeginDate;
+    @FXML
+    private Label lblEndDate;
+    @FXML
+    private TabPane historicalTabPane;
+    @FXML
+	private TableView<HistoricalWeatherStationModel> WsTable;
+	@FXML
+	private TableColumn<HistoricalWeatherStationModel, Boolean> tableColCheck;
+	@FXML
+	private TableColumn<HistoricalWeatherStationModel, String> tableColWs;
+	@FXML
+	private AnchorPane tempChartPane;
+	@FXML
+	private AnchorPane airChartPane;
+	@FXML
+	private AnchorPane magChartPane;
+	@FXML
+	private AnchorPane accChartPane;
+    
+    public void initialize() {
+    	
+    	if(Language.getLanguage().equals("de_de")){
+    		Locale.setDefault(Locale.GERMAN);
+    	}
+    	
+    	initTable();
+    	rbCelsius.setSelected(true);
+    	radioSelection = "rbCelsius";
+    	rbBar.setSelected(true);
+    	
+    	
+    	locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+    	lblBeginDate.setText(bundle.getString("lblBeginDate"));
+    	lblEndDate.setText(bundle.getString("lblEndDate"));
+    	tabTemperature.setText(bundle.getString("Temperature"));
+    	tabAirPressure.setText(bundle.getString("AirPressure"));
+    	tabMagneticField.setText(bundle.getString("MagneticField"));
+    	tabMovement.setText(bundle.getString("Movement"));
+    	tableColWs.setText(bundle.getString("WeatherStation"));
+    	rbHectoPascal.setText(bundle.getString("HectoPascal"));
+    	
+    	HistoricalWeatherStationModel.setHistoricalController(this);
+    	
+    	final Callback<DatePicker, DateCell> dayCellFactory1 = new Callback<DatePicker, DateCell>() {		    
+    		@Override
+		    public DateCell call(final DatePicker datePicker) {
+		        return new DateCell() {
+		            @Override
+		            public void updateItem(LocalDate item, boolean empty) {
+		                super.updateItem(item, empty);		                
+		                if(item.isAfter(LocalDate.now())){		                	
+		                	setDisable(true);
+		                    setStyle("-fx-background-color: #ffecee;");
+		                }
+		            }
+		        };
+		    }
+		 };
+		 dpBeginDate.setDayCellFactory(dayCellFactory1);	
+	
+        selectionModel = historicalTabPane.getSelectionModel();
+        historicalTabPane.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+				System.out.println("\nnew value " + newValue + "old value " + oldValue);
+					tabIndex = newValue.intValue();
+					initTable();
+					if(dpBeginDate.getValue() != null && dpEndDate.getValue() != null){
+						datePickerEnd();
+					}
+					if(tabIndex == 0){
+						radioSelection = "rbCelsius";
+					}else if(tabIndex == 1){
+						radioSelection = "rbBar";
+					}
+					
+					System.out.println(tabIndex);
+			}
+        	
+        });
+        datePickerListener();
+    }
+    
+    private void datePickerListener(){
+    	dpBeginDate.valueProperty().addListener(new ChangeListener<LocalDate>() {
+            @Override
+            public void changed(
+                    ObservableValue<? extends LocalDate> observableValue,
+                    LocalDate oldValue, LocalDate newValue) {
+		    		 dateDatePicker = dpBeginDate.getValue();
+		    		 try {
+			    		 instant = dateDatePicker.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+			    		 resBegin = Date.from(instant);
+					} catch (Exception e) {
+						locale = new Locale(Language.getLanguage());
+				    	bundle = ResourceBundle.getBundle("language.lang", locale);
+						errorMessage(bundle.getString("errorNoBeginDate"), bundle.getString("selectBeginDate"));
+						beginDate = null;
+					}
+            }
+        });
+    	dpEndDate.valueProperty().addListener(new ChangeListener<LocalDate>() {
+            @Override
+            public void changed(
+                    ObservableValue<? extends LocalDate> observableValue,
+                    LocalDate oldValue, LocalDate newValue) {
+            			System.out.println(radioSelection);
+            			if(tabIndex == 0){
+            				if(rbCelsius.isSelected()){
+            					radioSelection = "rbCelsius";
+            				}else{
+            					radioSelection = "rbFahrenheit";
+            				}
+    					}else if(tabIndex == 1){
+    						radioSelection = "rbBar";
+    						if(rbBar.isSelected()){
+            					radioSelection = "rbBar";
+            				}else{
+            					radioSelection = "rbHectoPascal";
+            				}
+    					}
+            			initTable();
+            }
+        });
+    }
+    
+    @FXML
+    private void datePickerEnd(){
+    	try {
+        	dateDatePicker = dpEndDate.getValue();
+        	instant = dateDatePicker.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant();
+    		resEnd = Date.from(instant);
+    		beginDate = new SimpleDateFormat("dd-MM-yy").format(resBegin);
+    		endDate = new SimpleDateFormat("dd-MM-yy").format(resEnd);
+        	Calendar cal = Calendar.getInstance();
+        	cal.setTime(resBegin);
+        	dates.clear();
+        	datexAxsis.clear();
+        	while (cal.getTime().before(resEnd)) {
+        	    cal.add(Calendar.DATE, 1);
+        	    if(datexAxsis.contains( new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime())) == false){
+        	    	if(dpBeginDate.getValue() == null && dpEndDate.getValue() == null){
+        	    		initTable();
+        	    	}
+        	    	dates.add(new SimpleDateFormat("yyyy-MM-dd").format(cal.getTime()));
+              	}
+        	}
+           if(tabIndex == 0){
+            	datexAxsis.addAll(dates);
+            	dateAxis = new CategoryAxis(datexAxsis);
+            	NumberAxis nuberAxis = new NumberAxis();
+            	lineChart = new LineChart<String, Number>(dateAxis,nuberAxis);
+            	tempChartPane.getChildren().remove(0);
+            	lineChart.prefWidthProperty().bind(tempChartPane.widthProperty());
+            	lineChart.prefHeightProperty().bind(tempChartPane.heightProperty());
+            	tempChartPane.getChildren().add(lineChart);
+        	}else if(tabIndex == 1){
+        		datexAxsis.addAll(dates);
+            	dateAxisAir = new CategoryAxis(datexAxsis);
+            	NumberAxis nuberAxis = new NumberAxis();
+            	lineChartAir = new LineChart<String, Number>(dateAxisAir,nuberAxis);
+            	airChartPane.getChildren().remove(0);
+            	lineChartAir.prefWidthProperty().bind(airChartPane.widthProperty());
+            	lineChartAir.prefHeightProperty().bind(airChartPane.heightProperty());
+            	airChartPane.getChildren().add(lineChartAir);
+        	}else if(tabIndex == 2){
+        		datexAxsis.addAll(dates);
+        		dateAxisMag = new CategoryAxis(datexAxsis);
+            	NumberAxis nuberAxis = new NumberAxis();
+            	lineChartMag = new LineChart<String, Number>(dateAxisMag,nuberAxis);
+            	magChartPane.getChildren().remove(0);
+            	lineChartMag.prefWidthProperty().bind(magChartPane.widthProperty());
+            	lineChartMag.prefHeightProperty().bind(magChartPane.heightProperty());
+            	magChartPane.getChildren().add(lineChartMag);
+        	}/*else{
+        		
+        	}*/
+
+		} catch (Exception e) {
+			locale = new Locale(Language.getLanguage());
+	    	bundle = ResourceBundle.getBundle("language.lang", locale);
+			errorMessage(bundle.getString("errorNoEndDate"), bundle.getString("selectEndDate"));
+			endDate = null;
+		}
+    }
+    
+	@SuppressWarnings("unchecked")
+	public void tableTemp(LineChart.Series<String, Number> seriesTemp, String name){
+		seriesTemp.setName(name);
+		lineChart.getData().addAll(seriesTemp);
+    }
+	
+	@SuppressWarnings("unchecked")
+	public void tableAir(LineChart.Series<String, Number> seriesAir, String name){
+		seriesAir.setName(name);
+		lineChartAir.getData().addAll(seriesAir);
+    }
+	
+	@SuppressWarnings("unchecked")
+	public void tableMag(LineChart.Series<String, Number> seriesMag, String name){
+		seriesMag.setName(name);
+		lineChartMag.getData().addAll(seriesMag);
+    }
+    
+    @FXML
+    private void barHectoPascal(ActionEvent event) {
+    	if(event.getSource().equals(rbBar)){
+    		rbBar.setSelected(true);
+    		rbHectoPascal.setSelected(false);
+    		radioSelection = "rbBar";
+    		radioSelection = "rbCelsius";
+    		elements.clear();
+    		nameSeries = new String[lineChartAir.getData().size()]; 
+    		
+    		for(int i=0;i<lineChartAir.getData().size();i++){
+    			nameSeries[i] = lineChartAir.getData().get(i).getName();
+    			for(int j=0;j<lineChartAir.getData().get(i).getData().size();j++){
+    				series.getData().add(new XYChart.Data<String, Number>(lineChartAir.getData().get(i).getData().get(j).getXValue().toString(),lineChartAir.getData().get(i).getData().get(j).getYValue().intValue() * 0.00001));
+    			}
+    			elements.add(series); 
+    			series = new LineChart.Series<String, Number>();
+    			series.getData().clear();
+    		}
+    		datePickerEnd();
+    		for(int k=0;k<elements.size();k++){
+    			tableAir(elements.get(k),nameSeries[k]);
+    		}
+    	}
+    	else if(event.getSource().equals(rbHectoPascal)){
+    		rbHectoPascal.setSelected(true);
+    		rbBar.setSelected(false);
+    		radioSelection = "rbHectoPascal";
+    		elements.clear();
+    		nameSeries = new String[lineChartAir.getData().size()]; 
+    		
+    		for(int i=0;i<lineChartAir.getData().size();i++){
+    			nameSeries[i] = lineChartAir.getData().get(i).getName();
+    			for(int j=0;j<lineChartAir.getData().get(i).getData().size();j++){
+    				series.getData().add(new XYChart.Data<String, Number>(lineChartAir.getData().get(i).getData().get(j).getXValue().toString(),lineChartAir.getData().get(i).getData().get(j).getYValue().intValue() * 100000));
+    			}
+    			elements.add(series); 
+    			series = new LineChart.Series<String, Number>();
+    			series.getData().clear();
+    		}
+    		datePickerEnd();
+    		for(int k=0;k<elements.size();k++){
+    			tableAir(elements.get(k),nameSeries[k]);
+    		}
+    	}
+    }
+
+    @FXML
+    private void celsiusFahrenheit(ActionEvent event) {
+    	if(event.getSource().equals(rbCelsius)){
+    		radioSelection = "rbCelsius";
+    		rbCelsius.setSelected(true);
+    		rbFahrenheit.setSelected(false);
+    		elements.clear();
+    		nameSeries = new String[lineChart.getData().size()]; 
+    		
+    		for(int i=0;i<lineChart.getData().size();i++){
+    			nameSeries[i] = lineChart.getData().get(i).getName();
+    			for(int j=0;j<lineChart.getData().get(i).getData().size();j++){
+    				series.getData().add(new XYChart.Data<String, Number>(lineChart.getData().get(i).getData().get(j).getXValue().toString(),(lineChart.getData().get(i).getData().get(j).getYValue().intValue() - 32) * 0.55555555555));
+    			}
+    			elements.add(series); 
+    			series = new LineChart.Series<String, Number>();
+    			series.getData().clear();
+    		}
+    		datePickerEnd();
+    		for(int k=0;k<elements.size();k++){
+    			tableTemp(elements.get(k),nameSeries[k]);
+    		}
+    	}
+    	else if(event.getSource().equals(rbFahrenheit)){
+    		radioSelection = "rbFahrenheit";
+    		rbFahrenheit.setSelected(true);
+    		rbCelsius.setSelected(false);
+    		elements.clear();
+    		nameSeries = new String[lineChart.getData().size()]; 
+    		
+    		for(int i=0;i<lineChart.getData().size();i++){
+    			nameSeries[i] = lineChart.getData().get(i).getName();
+    			for(int j=0;j<lineChart.getData().get(i).getData().size();j++){
+    				series.getData().add(new XYChart.Data<String, Number>(lineChart.getData().get(i).getData().get(j).getXValue().toString(),(lineChart.getData().get(i).getData().get(j).getYValue().intValue()  * 1.8) + 32));
+    			}
+    			elements.add(series); 
+    			series = new LineChart.Series<String, Number>();
+    			series.getData().clear();
+    		}
+    		datePickerEnd();
+    		for(int k=0;k<elements.size();k++){
+    			tableTemp(elements.get(k),nameSeries[k]);
+    		}
+    	}
+    }
+
+    @FXML
+    private void datePickerBegin(){ 
+		final Callback<DatePicker, DateCell> dayCellFactory2 = new Callback<DatePicker, DateCell>() {
+		    @Override
+		    public DateCell call(final DatePicker datePicker) {	    	
+		        return new DateCell() {
+		            @Override
+		            public void updateItem(LocalDate item, boolean empty) {
+		                super.updateItem(item, empty);		           
+		                try {
+		                	if(!dpBeginDate.getValue().equals(null)){
+		                		if (item.isBefore(dpBeginDate.getValue())) {
+		                            setDisable(true);
+		                            setStyle("-fx-background-color: #ffecee;");
+			                    }
+			                    long p = ChronoUnit.DAYS.between(dpBeginDate.getValue(), item);
+			                    locale = new Locale(Language.getLanguage());
+			                	bundle = ResourceBundle.getBundle("language.lang", locale);
+			                    setTooltip(new Tooltip(p + " " + bundle.getString("days")));
+		                	}
+		                	else{
+		                		setDisable(true);
+								setStyle("-fx-background-color: #ffecee;");
+		                	}        	
+						} catch (Exception e) {
+							setDisable(true);
+							setStyle("-fx-background-color: #ffecee;");
+						}
+		            }
+		        };
+		    }
+		 };
+   		 dpEndDate.setDayCellFactory(dayCellFactory2);
+   		 if(dpBeginDate.getValue() != null){
+   			 dpEndDate.setValue(dpBeginDate.getValue());
+   		 }
+   	}
+
+    private void initTable(){
+    	ObservableList<HistoricalWeatherStationModel> data = null;
+		try {
+			data = dbController.historicalAllWs(LogInController.getLogUserId());
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+
+		tableColCheck.setMinWidth(50);
+		tableColCheck.setCellValueFactory(new PropertyValueFactory<HistoricalWeatherStationModel, Boolean>("selected"));
+		tableColCheck.setCellFactory(new Callback<TableColumn<HistoricalWeatherStationModel, Boolean>, TableCell<HistoricalWeatherStationModel, Boolean>>() {
+		    public TableCell<HistoricalWeatherStationModel, Boolean> call(TableColumn<HistoricalWeatherStationModel, Boolean> p) {
+		        return new CheckBoxTableCell<HistoricalWeatherStationModel, Boolean>();
+		    }
+		});
+
+		tableColWs.setCellValueFactory(new PropertyValueFactory<HistoricalWeatherStationModel, String>("name"));
+		WsTable.setItems(data);
+		WsTable.setEditable(false);
+    } 
+    
+    public void errorMessage(String title,String context){
+		Alert alert = new Alert(AlertType.ERROR); 
+	    alert.setTitle(title);
+	    alert.setHeaderText(null);
+	    alert.setContentText(context);
+	    alert.showAndWait();
+	}
+    
+    public void warningMessage(String title,String context){
+		Alert alert = new Alert(AlertType.WARNING); 
+	    alert.setTitle(title);
+	    alert.setHeaderText(null);
+	    alert.setContentText(context);
+	    alert.showAndWait();
+	}
+    
+    public class CheckBoxTableCell<S, T> extends TableCell<S, T> {
+        private final CheckBox checkBox;
+        private ObservableValue<T> ov;
+
+        public CheckBoxTableCell() {
+            this.checkBox = new CheckBox();
+            this.checkBox.setAlignment(Pos.CENTER);
+            setAlignment(Pos.CENTER);
+            setGraphic(checkBox);
+        } 
+         
+        @Override 
+        public void updateItem(T item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                setGraphic(checkBox);
+                if (ov instanceof BooleanProperty) {
+                    checkBox.selectedProperty().unbindBidirectional((BooleanProperty) ov);
+                }
+                ov = getTableColumn().getCellObservableValue(getIndex());
+                if (ov instanceof BooleanProperty) {
+                    checkBox.selectedProperty().bindBidirectional((BooleanProperty) ov);
+                }
+            }
+        }
+    }
+}
+

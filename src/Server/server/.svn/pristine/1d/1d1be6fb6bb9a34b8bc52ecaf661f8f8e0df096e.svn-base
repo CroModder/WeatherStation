@@ -1,0 +1,92 @@
+package controller;
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+
+/**
+ * Server application
+ *
+ * @author
+ *      T13_SWP5 (T13S)
+ */
+public class CLI {
+
+    @Option(name="-help" , usage="print this message")
+    private boolean help;
+
+    @Option(name="-users", usage="Go to users settings")
+    private boolean users;
+    
+    @Option(name="-config", usage="Enter the device configuration menu")
+    private boolean config;
+    
+    @Option(name="-GUI", usage="Start server in the graphical mode")
+    private boolean gui;
+    
+    @Option(name="-start", usage="Start the server")
+    private boolean start;
+
+    // receives other command line parameters than options
+    @Argument
+    private List<String> arguments = new ArrayList<String>();
+    
+    CmdLineParser parser = new CmdLineParser(this);
+
+    public static void main(String[] args) throws IOException {
+    	if (args.length>0){
+    		new CLI().doMain(args);
+		}
+			else { 
+				new CLI().printUsage();
+			}
+    }
+
+    public void doMain(String[] args) throws IOException {
+    	parser = new CmdLineParser(this);
+        try {
+            // parse the arguments.
+            parser.parseArgument(args);
+            
+            if(!arguments.isEmpty()) {
+            	printUsage();
+            }
+
+        } catch( CmdLineException e ) {
+            System.err.println(e.getMessage());
+            System.err.println("Usage: [options...]");
+            System.err.println("Options:");
+            parser.printUsage(System.err);
+            System.err.println();
+
+            return;
+        }
+
+        if( help ) {
+        	System.out.println("Usage: [options...]");
+        	System.out.println("Options:");
+            parser.printUsage(System.out);
+        }
+        if( start ) {
+        	System.out.println("Starting server...");
+        	sockets.Server.start();
+        }
+        if( users ) {
+        	Users usersController = new Users();
+        	usersController.doMain(args);
+        }
+    }
+
+	public void printUsage() {
+		System.err.println("- Invalid argument given!");
+    	System.err.println("Usage: [options...]");
+        System.err.println("Options:");
+        parser.printUsage(System.err);
+		
+	}
+}

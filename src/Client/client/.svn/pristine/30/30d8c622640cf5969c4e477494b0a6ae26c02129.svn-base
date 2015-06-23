@@ -1,0 +1,53 @@
+package socket;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.Scanner;
+
+import org.json.JSONObject;
+
+public class Client {
+
+	public static void main(String[] args) throws IOException {
+		JSONObject user= new JSONObject();
+		user.put("name", "MaHio!");
+		user.put("password", "3");
+		Socket socket;
+		socket = new Socket("localhost", 6040);
+		//boolean socketClose = false;
+		try {
+			String input="";
+			Scanner in = new Scanner(System.in);
+			while( !input.equals("Nina")){
+				System.out.print("Uneste ime: ");
+		        input = in.nextLine();
+		        user.put("name", input);
+		        
+				OutputStreamWriter writer= new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
+	    		writer.write(user.toString() + "\n");
+	    		writer.flush();
+	    		BufferedReader reader= new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+	    		String jsonText= reader.readLine();
+	    		System.out.println(jsonText);
+	    		JSONObject object= new JSONObject(jsonText);
+	
+	    		System.out.println("Server answered: " + object.getString("name"));
+	    		System.out.println("Server answered: " + object.getInt("number"));
+	    		if (object.getString("name").equals("Nina")){
+	    			socket.close();
+	    		}
+			}
+	        in.close();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			System.out.println("greska sa hostom!");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.out.println("IO greska");
+		}
+	}
+}

@@ -1,0 +1,129 @@
+package controller;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
+public class HomeAdminController implements Initializable, ControlledScreen {
+
+	private ScreensController myController;
+	
+    @FXML
+    private Button btnConnect;
+    @FXML
+    private Button btnHistorical;
+    @FXML
+    private Button btnUserSettings;
+    @FXML
+    private Button btnLanguage;
+    @FXML
+    private MenuItem MenuItemLogOut;
+    @FXML
+    private MenuBar MenuBarHome;
+    @FXML
+    private AnchorPane AnchoPaneHome;
+    @FXML
+    private MenuItem menuOptions;
+    @FXML
+    private MenuItem menuHelp;
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+    	MainPanelController.setHomeAdminController(this);
+    	LanguageController.setHomeAdminController(this);
+    	language();
+    }    
+    
+    public void setScreenParent(ScreensController screenParent){
+        myController = screenParent;
+    }
+    
+    public void language(){
+		Locale locale = new Locale(Language.getLanguage());
+    	ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+    	btnConnect.setText(bundle.getString("btnConnect"));
+    	btnHistorical.setText(bundle.getString("btnHistorical"));
+    	btnLanguage.setText(bundle.getString("btnLanguage"));
+    	menuOptions.setText(bundle.getString("options"));
+    	menuHelp.setText(bundle.getString("help"));
+    	MenuItemLogOut.setText(bundle.getString("logOut"));
+    }
+
+	@FXML
+    private void startConnect(ActionEvent event) throws IOException {
+    	AnchorPane page = (AnchorPane) FXMLLoader.load(getClass().getResource("/view/MainPanelView.fxml"));
+	    Scene scene = new Scene(page);
+	    Stage stage = new Stage();
+	    stage.setTitle("Main panel");
+	    stage.setScene(scene);
+	    stage.setResizable(false);
+	    stage.initModality(Modality.WINDOW_MODAL);
+	    stage.initOwner(((Node)event.getSource()).getScene().getWindow() );
+	    stage.show();
+    }
+
+    @FXML
+    private void startHistorical(ActionEvent event) throws IOException {
+    	AnchorPane page = (AnchorPane) FXMLLoader.load(getClass().getResource("/view/HistoricalView.fxml"));
+	    Scene scene = new Scene(page);
+	    Stage stage = new Stage();
+		Locale locale = new Locale(Language.getLanguage());
+    	ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+	    stage.setTitle(bundle.getString("btnHistorical"));
+	    stage.setScene(scene);
+	    stage.setResizable(false);
+	    stage.initModality(Modality.WINDOW_MODAL);
+	    stage.initOwner(((Node)event.getSource()).getScene().getWindow() );
+	    stage.show();
+    }
+    
+    @FXML
+    private void startUserSettings(ActionEvent event) throws IOException{
+    	BorderPane page = (BorderPane) FXMLLoader.load(getClass().getResource("/view/UserSettingsView.fxml"));
+	    Scene scene = new Scene(page);
+	    Stage stage = new Stage();
+		/*Locale locale = new Locale(Language.getLanguage());
+    	ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+	    stage.setTitle(bundle.getString("btnHistorical"));*/
+	    stage.setScene(scene);
+	    stage.setResizable(false);
+	    stage.initModality(Modality.WINDOW_MODAL);
+	    stage.initOwner(((Node)event.getSource()).getScene().getWindow() );
+	    stage.show();
+    }
+
+    @FXML
+    private void startLanguage(ActionEvent event) throws IOException {
+    	AnchorPane page = (AnchorPane) FXMLLoader.load(getClass().getResource("/view/LanguageView.fxml"));
+	    Scene scene = new Scene(page);
+	    Stage stage = new Stage();
+		Locale locale = new Locale(Language.getLanguage());
+    	ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+	    stage.setTitle(bundle.getString("btnLanguage"));
+	    stage.setScene(scene);
+	    stage.setResizable(false);
+	    stage.initModality(Modality.WINDOW_MODAL);
+	    stage.initOwner(((Node)event.getSource()).getScene().getWindow());
+	    stage.show();
+    }
+    
+    @FXML
+    public void logOut() throws IOException{
+    	myController.setScreen(ScreensFramework.screen1ID);
+    }
+}

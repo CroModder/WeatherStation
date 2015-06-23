@@ -1,0 +1,198 @@
+package socket;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import controller.DbController;
+
+public class Server {
+	private static DbController dbController = new DbController();
+	private static JSONObject object = new JSONObject();
+	private static boolean verified = false;
+	private static BufferedReader reader;
+	private static String jsonText;
+	private static XtrinsicDemoApp app = new XtrinsicDemoApp();
+	private static LinkedBlockingQueue<JSONObject> recordObject = new LinkedBlockingQueue<JSONObject>();
+	//private static LinkedBlockingDeque<JSONObject> recordObject = new LinkedBlockingDeque<JSONObject>();
+	private static Date date = new Date();
+	private static SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
+
+	public static void start() throws IOException {
+		dbController.dbInit();
+		app.startInit();
+		ServerSocket serverSocket= new ServerSocket(6040);
+		serverSocket.getInetAddress();
+		System.out.println("Server started at: " + InetAddress.getLocalHost() + " on port: " + serverSocket.getLocalPort());
+		try {
+			while (!Thread.interrupted()) {
+				System.out.println("New thread");
+				final Socket socket= serverSocket.accept();
+				startHandler(socket);
+			}
+		} finally {
+			serverSocket.close();
+		}
+	}
+
+	private static void startHandler(final Socket socket) {
+			Thread handler= new Thread(new Runnable()  {
+			private Timer timer = new Timer();
+			private TimerTask timerTask;
+			private boolean loopStop = false;
+			private String name = "";
+
+			public void run() {
+				while(!socket.isClosed()){
+					try {
+		        		if(socket.isClosed()){
+		        			System.out.println("Socket is closed!");
+					    	timerTask.cancel();
+					    	timer.purge();
+					    }
+			        	else {
+							reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+							jsonText = reader.readLine();
+							if(jsonText == null){
+								System.out.println("Closing the socket...");
+								closeSocket();
+							}
+							else {
+								System.out.println("server " + jsonText);
+							object= new JSONObject(jsonText);
+							System.out.println(object.toString());
+							switch(object.getString("action")) {
+							    case "auth":
+							    	try {
+										if(dbController.authCheck(object.getString("username"), object.getString("password"))){
+											verified = true;
+											loopStop = false;
+											name = object.getString("wsName");
+											sendData();
+										}else{
+											verified = false;
+										}
+									} catch (JSONException e) {
+										e.printStackTrace();
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+							        break;
+							    case "data":
+							    	loopStop = false;
+							        sendData();
+							        break;
+							    case "stop":
+							    	System.out.println("Stop data sending");
+							    	closeSocket();
+							    	loopStop = true;
+							        break;
+							    case "record":
+								try {
+									recordObject.put(object);
+									Thread.sleep(2000);
+								} catch (InterruptedException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							    	recordData();
+							    	break;
+							    default:
+							    	System.out.println("Ilegal action!");
+							    	break;
+							}
+							}
+			        	}
+					} catch (IOException ex) {
+						ex.printStackTrace();
+						closeSocket();
+					}	    	
+			 
+				}
+			}
+			
+			private void sendData() {
+				//TODO get interval from DB
+					timerTask = new TimerTask() {
+					    @Override
+					    public void run() {
+					    	try {
+					    		if(loopStop == true){
+					    			timerTask.cancel();
+					    			timer.cancel();
+					    			timer.purge();
+					    		}else{
+					    			date = new Date();
+					    			/*System.out.println("Air :" + app.getAirData());
+					    			System.out.println("Mag :" + app.getMagnetometerData());
+					    			System.out.println("Move : " + app.getMagnetometerMovData());
+					    			System.out.println("Temp : " + app.getTempData());
+					    			Date date = Calendar.getInstance().getTime();
+					    		    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+					    		    System.out.println(sdf.format(date));*/
+					    			JSONObject objectCommand = new JSONObject();
+					    			objectCommand.put("wsName", name);
+					    			objectCommand.put("temp", app.getTempData());
+				            		objectCommand.put("mag", app.getMagnetometerData());
+				            		objectCommand.put("mov", app.getMagnetometerMovData());
+				            		objectCommand.put("air", app.getAirData());
+									OutputStreamWriter writer= new OutputStreamWriter(socket.getOutputStream(), "UTF-8");
+									writer.write(objectCommand.toString() + "\n");
+									writer.flush();
+					    		}
+							} catch (Exception e) {
+							}
+					    };
+					};timer.schedule(timerTask,500,2000);
+			}
+			
+			
+			private void recordData() {
+				//TODO recording
+				Thread recordHandler= new Thread(new Runnable()  {
+					@Override
+					public void run() {
+						try {
+							System.out.println("recording FIFO size " + recordObject.size());
+							System.out.println("recording " + recordObject.take());
+							System.out.println("recording FIFO size " + recordObject.size());
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}	
+				});
+				recordHandler.start();
+				System.out.println("recording thread id: " + recordHandler.getId());
+			}
+			
+			private void closeSocket() {
+				try {
+					socket.close();
+					//TODO test
+					System.out.println(Thread.currentThread().getId());
+	    			Thread.currentThread().interrupt();
+				} catch (IOException ex) {
+
+				}
+			}
+		});
+		handler.start();
+		System.out.println("Thread ID: " + handler.getId() + " ,Thread Name: " + handler.getName());
+	}
+}

@@ -1,0 +1,123 @@
+package controller;
+
+import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
+	
+public class NewWeatherStationController {
+	
+	DbController dbController = new DbController();
+	
+	private Pattern pattern;
+    private Matcher matcher;
+    private static final String IPADDRESS_PATTERN = 
+    		"^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+    		"([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+    		"([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
+    		"([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
+ 	@FXML
+    private TextField txtIPAdress;	
+    @FXML
+    private TextField txtPort;
+    @FXML
+    private Button btnConfirm;	
+    @FXML
+    private Button btnCancel;
+    @FXML
+    private TextField txtWsName;
+    @FXML
+    private ImageView imageNew;
+    @FXML
+    private Pane paneNewTitle;
+    @FXML
+    private Label lblNewTitle;
+    
+    public void initialize() {
+    	Image image = new Image("/img/addNewIcon.png");
+    	imageNew.setImage(image);
+    	imageNew.setFitWidth(100);
+    	imageNew.setPreserveRatio(true);
+    	imageNew.setSmooth(true);
+    	imageNew.setCache(true);
+    	imageNew.setLayoutX(35);
+    	imageNew.setLayoutY(8);
+    	lblNewTitle.setText("Add new Weahter station\n for your personal use.");
+    	
+    	paneNewTitle.setStyle(
+                "-fx-background-color: #FFA000; " +
+                "-fx-effect: dropshadow(three-pass-box, #8d8d8d, 10, 0, 0, 0);");
+    }
+
+    @FXML
+    void addNewWs(ActionEvent event) throws SQLException {
+    	Object source = event.getSource();
+		IPAddressValidator();
+    	int port = 0;
+    	String result[] = {""};
+		if (source instanceof Button) {
+			if(txtWsName.getText().isEmpty() || txtIPAdress.getText().isEmpty() || txtPort.getText().isEmpty()){
+				Alert alert = new Alert(AlertType.WARNING); 
+			    alert.setTitle("Warning");
+			    alert.setHeaderText("Input");
+			    alert.setContentText("Please fill all required fields!");
+			    alert.showAndWait();  
+			}
+			else if (validate(txtIPAdress.getText()) == false) {
+				Alert alert = new Alert(AlertType.ERROR); 
+			    alert.setTitle("Error");
+			    alert.setHeaderText(null);
+			    alert.setContentText("Please type the IP adress in correct format" + "\n" + "Example: 192.168.1.50");
+			    alert.showAndWait();
+			    txtIPAdress.requestFocus();
+			}
+			else {
+				try {
+					port = Integer.valueOf(txtPort.getText());
+					result = dbController.newWs(txtWsName.getText(), txtIPAdress.getText(), port, LogInController.getLogUserId());
+				} catch (Exception e) {
+					Alert alert = new Alert(AlertType.ERROR); 
+				    alert.setTitle("Error");
+				    alert.setHeaderText(null);
+				    alert.setContentText("Please type correct port number");
+				    alert.showAndWait();
+				}
+			}
+			if(result[0] == "true"){ 
+				Alert alert = new Alert(AlertType.INFORMATION); 
+			    alert.setTitle("Success");
+			    alert.setHeaderText("New WS");
+			    alert.setContentText("New weather station added successful");
+			    alert.showAndWait();
+			    txtWsName.setText("");
+			    txtIPAdress.setText("");
+			    txtPort.setText("");
+			    dbController.allWS(LogInController.getLogUserId());
+			}
+		}
+    }
+    
+    public void IPAddressValidator(){
+    	pattern = Pattern.compile(IPADDRESS_PATTERN);
+    }
+   
+     public boolean validate(final String ip){		  
+ 	  matcher = pattern.matcher(ip);
+ 	  return matcher.matches();	    	    
+     }
+
+    @FXML
+    void cancel(ActionEvent event){
+    	((Node)(event.getSource())).getScene().getWindow().hide();
+    }
+}

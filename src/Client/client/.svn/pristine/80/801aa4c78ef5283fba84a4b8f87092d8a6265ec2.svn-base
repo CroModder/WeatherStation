@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.effect.*?>
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane fx:id="AnchorPaneLogIn" prefHeight="340.0" prefWidth="525.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LogInController">
+   <children>
+      <TextField fx:id="txtUserName" layoutX="295.0" layoutY="108.0" onKeyPressed="#enterConfirm" prefHeight="26.0" prefWidth="171.0" promptText="Username" />
+      <PasswordField fx:id="txtPassword" layoutX="295.0" layoutY="163.0" onKeyPressed="#enterConfirm" prefHeight="25.0" prefWidth="171.0" promptText="Password" />
+       <Button fx:id="btnLogin" layoutX="274.0" layoutY="274.0" mnemonicParsing="false" onAction="#logIn" prefHeight="26.0" prefWidth="107.0" text="Log in" AnchorPane.topAnchor="274.0" />
+      <Button fx:id="btnCancel" layoutX="384.0" layoutY="274.0" mnemonicParsing="false" onAction="#cancelLogIn" prefHeight="26.0" prefWidth="107.0" text="Cancel" />
+      <ImageView fx:id="WeatherStationLogo" fitHeight="105.0" fitWidth="353.0" pickOnBounds="true" preserveRatio="true" />
+      <Button fx:id="btnRegister" layoutX="57.0" layoutY="274.0" mnemonicParsing="false" onAction="#startRegister" prefHeight="26.0" prefWidth="134.0" text="Register now" />
+      <Label fx:id="lblRegTxt" alignment="CENTER" layoutX="19.0" layoutY="219.0" prefHeight="41.0" prefWidth="212.0" text="prijevod" textAlignment="CENTER" wrapText="true" />
+      <MenuButton fx:id="menuBtnUserAdmin" layoutX="307.0" layoutY="31.0" mnemonicParsing="false" prefHeight="31.0" prefWidth="141.0" text="User" textFill="#323c64">
+        <items>
+          <MenuItem fx:id="menuBtnAdmin" mnemonicParsing="false" onAction="#choiceUserAdmin" text="Adminstrator" />
+          <MenuItem fx:id="menuBtnUser" mnemonicParsing="false" onAction="#choiceUserAdmin" text="User" />
+        </items>
+      </MenuButton>
+      <Label fx:id="lblErrorMsg" layoutX="294.0" layoutY="221.0" prefHeight="41.0" prefWidth="171.0" textAlignment="CENTER" textFill="RED" wrapText="true" />
+      <Separator layoutX="245.0" layoutY="7.0" orientation="VERTICAL" prefHeight="324.0" prefWidth="11.0" />
+      <Button fx:id="buttonForgotPasswd" layoutX="295.0" layoutY="196.0" mnemonicParsing="false" onAction="#forgotPasswd" onMouseEntered="#changeColor" onMouseExited="#changeColor" prefHeight="16.0" prefWidth="171.0" text="Forgot password?" />
+      <ImageView fitHeight="182.0" fitWidth="212.0" layoutX="19.0" layoutY="29.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../img/WeatherStationLogotypeResized.png" />
+         </image>
+      </ImageView>
+   </children>
+</AnchorPane>

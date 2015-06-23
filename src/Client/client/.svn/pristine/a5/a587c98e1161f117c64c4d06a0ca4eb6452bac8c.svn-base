@@ -1,0 +1,257 @@
+package controller;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuButton;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import javafx.scene.control.MenuItem;
+
+public class LogInController implements Initializable, ControlledScreen {
+  
+  private ScreensController myController;
+  private DbController dbController = new DbController();
+  private ErrorLogController errorLogController = new ErrorLogController();
+  private Locale locale = null;
+  private static Integer userAdmin = 2;
+  public static Integer logUserId = 15;
+  
+  public static Integer getUserAdmin() {
+	return userAdmin;
+  }
+  
+  public static Integer getLogUserId() {
+    return logUserId;
+  }
+
+  @FXML
+  private TextField txtUserName;
+  @FXML
+  private PasswordField txtPassword;
+  @FXML
+  private Button btnLogin;
+  @FXML
+  private Button btnCancel;
+  @FXML
+  private Button btnRegister;
+  @FXML
+  private MenuButton menuBtnUserAdmin;
+  @FXML
+  private MenuItem menuBtnAdmin;
+  @FXML
+  private MenuItem menuBtnUser;
+  @FXML
+  private ImageView WeatherStationLogo;
+  @FXML
+  private Label lblErrorMsg;
+  @FXML
+  private Label lblRegTxt;
+  @FXML
+  private Button buttonForgotPasswd;
+  
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
+      buttonForgotPasswd.setStyle("-fx-background-color: transparent;");
+      LanguageController.setLogInController(this);
+      language();
+    }
+    
+  //==========================Language==========================
+    public void language(){
+      locale = new Locale(Language.getLanguage());
+      ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+      
+      btnLogin.setText(bundle.getString("btnLogin"));
+      btnCancel.setText(bundle.getString("btnCancel"));
+      btnRegister.setText(bundle.getString("btnRegisterNow"));
+      menuBtnAdmin.setText(bundle.getString("menuBtnAdmin"));
+      menuBtnUser.setText(bundle.getString("menuBtnUser"));
+      menuBtnUserAdmin.setText(bundle.getString("menuBtnUser"));
+      lblRegTxt.setText(bundle.getString("lblRegTxt"));
+      txtUserName.setPromptText(bundle.getString("txtUserName"));
+      txtPassword.setPromptText(bundle.getString("txtPassword"));
+      buttonForgotPasswd.setText(bundle.getString("lblForgotPasswd"));
+    }
+    //==========================Language==========================
+    
+    public void setScreenParent(ScreensController screenParent){
+        myController = screenParent;
+    }
+  
+  @FXML
+  public void logIn(ActionEvent event) throws Exception{
+    Object source = event.getSource();
+    String[] result = new String[2];
+    if (source instanceof Button) {
+      if(txtUserName.getText().isEmpty() || txtPassword.getText().isEmpty()){
+        locale = new Locale(Language.getLanguage());
+        ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+        lblErrorMsg.setText(bundle.getString("errorEmpty"));        
+        txtPassword.clear();
+      }else if ((txtUserName.getText().isEmpty() == false && txtPassword.getText().isEmpty() == false)){
+        try {
+          result = dbController.logIn(txtUserName.getText(), txtPassword.getText(),userAdmin);
+          if(result[0] == "true"){
+            try {
+              txtPassword.setText("");
+              lblErrorMsg.setText("");
+              logUserId = Integer.valueOf(result[1]);
+              if(userAdmin.intValue() == 1){
+                  myController.setScreen(ScreensFramework.screen3ID);
+              } else{
+                  myController.setScreen(ScreensFramework.screen2ID);
+              }
+            } catch (Exception e) {
+                errorLogController.error(e.toString());
+                System.out.println("an error has occurred (Home window opening)");
+            }
+          }
+          else{
+            locale = new Locale(Language.getLanguage());
+            ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+            lblErrorMsg.setText(bundle.getString("errorIncorrect"));
+            txtPassword.clear();
+          }
+        } catch (Exception e) {
+            errorLogController.error(e.toString());
+        	System.out.println("Error while proccessing login");
+        }
+      }  
+    }
+  }
+  
+  @FXML
+  public void enterConfirm(KeyEvent ke) throws Exception{
+    if(ke.getCode().equals(KeyCode.ENTER)){
+      String[] result = new String[2];
+      if(txtUserName.getText().isEmpty() || txtPassword.getText().isEmpty()){
+        locale = new Locale(Language.getLanguage());
+          ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+        lblErrorMsg.setText(bundle.getString("errorEmpty"));
+        txtPassword.clear();
+      }else if ((txtUserName.getText().isEmpty() == false && txtPassword.getText().isEmpty() == false)){
+        try {
+          result = dbController.logIn(txtUserName.getText(), txtPassword.getText(),userAdmin);
+          if(result[0] == "true"){
+            try {             
+              txtPassword.setText("");
+              lblErrorMsg.setText("");
+              logUserId = Integer.valueOf(result[1]);
+              if(userAdmin.intValue() == 1){
+                  myController.setScreen(ScreensFramework.screen3ID);
+              } else{
+                  myController.setScreen(ScreensFramework.screen2ID);
+              }
+            } catch (Exception e) {
+                errorLogController.error(e.toString());
+            	System.out.println("an error has occurred (Home window opening)");
+            }
+          }
+          else{
+        	  locale = new Locale(Language.getLanguage());
+              ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+              lblErrorMsg.setText(bundle.getString("errorIncorrect"));
+              txtPassword.clear();
+          }
+        } catch (Exception e) {
+            errorLogController.error(e.toString());
+            System.out.println("Error while proccessing login");
+        }
+      }   
+    }
+  }
+    
+  @FXML
+  public void choiceUserAdmin(ActionEvent event){
+    if(event.getSource().equals(menuBtnAdmin)){
+      menuBtnUserAdmin.setText(menuBtnAdmin.getText());
+      userAdmin = 1;
+    }
+    else {
+      menuBtnUserAdmin.setText(menuBtnUser.getText());
+      userAdmin = 2;
+    }
+  }
+    
+    @FXML
+    private void forgotPasswd(ActionEvent event) throws IOException{
+      System.out.println("password");
+      try {
+      	BorderPane page = (BorderPane) FXMLLoader.load(getClass().getResource("/view/ForgotPasswordView.fxml"));
+          Scene secondScene = new Scene(page);
+          Stage secondStage = new Stage();
+          page.getStylesheets().add("/view/style.css");
+          locale = new Locale(Language.getLanguage());
+          //ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+          //secondStage.setTitle(bundle.getString("registerTitle"));
+          secondStage.setScene(secondScene);
+          secondStage.setResizable(false);
+          secondStage.initModality(Modality.WINDOW_MODAL);
+          secondStage.initOwner(((Node)event.getSource()).getScene().getWindow() );
+          secondStage.show();
+      } catch (Exception e) {
+          errorLogController.error(e.toString());
+    	  System.out.println("error on opening Register occurred");
+      }
+    }
+    
+    @FXML
+    private void changeColor(MouseEvent event){
+      
+      if(event.getEventType().toString().equals("MOUSE_ENTERED")){
+      buttonForgotPasswd.setStyle("-fx-background-color: transparent;"  +
+          "-fx-underline: true;");
+      }else {
+        buttonForgotPasswd.setStyle("-fx-background-color: transparent;"  +
+          "-fx-underline: false;");
+    }
+    }
+  
+  @FXML
+  public void startRegister(ActionEvent event) throws Exception{
+    try {
+    	AnchorPane page = (AnchorPane) FXMLLoader.load(getClass().getResource("/view/RegisterView.fxml"));
+        Scene secondScene = new Scene(page);
+        Stage secondStage = new Stage();
+        page.getStylesheets().add("/view/style.css");
+        locale = new Locale(Language.getLanguage());
+        ResourceBundle bundle = ResourceBundle.getBundle("language.lang", locale);
+        secondStage.getIcons().add(new Image("img/WeatherStationLogo.png"));
+        secondStage.setTitle(bundle.getString("registerTitle"));
+        secondStage.setScene(secondScene);
+        secondStage.setResizable(false);
+        secondStage.initModality(Modality.WINDOW_MODAL);
+        secondStage.initOwner(((Node)event.getSource()).getScene().getWindow() );
+        secondStage.show();
+    } catch (Exception e) {
+        errorLogController.error(e.toString());
+        System.out.println("error on opening Register occurred");
+    }
+  }
+    
+  @FXML
+  public void cancelLogIn(ActionEvent event) {
+      Stage stage = (Stage) btnCancel.getScene().getWindow();
+      stage.close();
+  }
+}

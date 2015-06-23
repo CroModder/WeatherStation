@@ -1,0 +1,119 @@
+package controller;
+import model.UsersModel;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+/**
+ * Server application
+ *
+ * @author
+ *      T13_SWP5 (T13S)
+ */
+public class Users {
+	private static DbController dbController = new DbController();
+	ArrayList<UsersModel> userList = new ArrayList<UsersModel>();
+
+    @Option(name="-HELP" , usage="print this message", forbids={"-ADD", "-EDIT", "-DELETE", "-LIST", "-EXIT"})
+    private boolean help;
+
+    @Option(name="-ADD", usage="Add new user", forbids={"-HELP", "-EDIT", "-DELETE", "-LIST", "-EXIT"})
+    private boolean add;
+    
+    @Option(name="-EDIT", metaVar="<user_id>", usage="Delete user with specific ID", forbids={"-ADD", "-HELP", "-DELETE", "-LIST", "-EXIT"})
+    private String edit;
+    
+    @Option(name="-DELETE", metaVar="<user_id>", usage="Edit user with specific ID", forbids={"-ADD", "-EDIT", "-HELP", "-LIST", "-EXIT"})
+    private String delete;
+    
+    @Option(name="-LIST", usage="List all users", forbids={"-ADD", "-EDIT", "-DELETE", "-HELP", "-EXIT"})
+    private boolean list;
+    
+    @Option(name="-EXIT" , usage="print this message", forbids={"-ADD", "-EDIT", "-DELETE", "-LIST", "-HELP"})
+    private boolean exit;
+
+    // receives other command line parameters than options
+    @Argument
+    private List<String> arguments = new ArrayList<String>();
+    
+    CmdLineParser parser = new CmdLineParser(this);
+
+    public void doMain() throws IOException {
+    	dbController.dbInit();
+    	System.out.println("==================== Users Settings ====================\n");
+    	System.out.println("Usage: java -jar server.jar [option]");
+    	parser.printUsage(System.out);
+    	String userInput = "";
+        Scanner in = new Scanner(System.in);
+        while(!userInput.equals("-EXIT")) {
+        	System.out.print("> ");
+        	userInput = in.nextLine();
+            String[] userArgs = userInput.split("\\s+");
+        	parser = new CmdLineParser(this);
+            try {
+                parser.parseArgument(userArgs);
+                
+                if(!arguments.isEmpty()) {
+                	printUsage();
+                }
+
+            } catch( CmdLineException e ) {
+                System.err.println(e.getMessage());
+                System.err.println("Usage: java -jar server.jar [option]");
+                System.err.println("Options:");
+                parser.printUsage(System.err);
+                System.err.println();
+
+            } 
+            if( help ) {
+            	System.out.println("Usage: java -jar server.jar [option]");
+            	System.out.println("Options:");
+                parser.printUsage(System.out);
+            } 
+            else if (list){
+            	System.out.println("\nID\tName\t\tE-mail\t\t\tRole");
+            	System.out.println("====================================================");
+            	
+            	try {
+					userList = dbController.getUsers();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+            	String format = "%-8s%-10s%-32s%s%n";
+            	for (int i = 0; i < userList.size(); i++) {
+            		System.out.printf(format, userList.get(i).getId(), userList.get(i).getName(),userList.get(i).getEmail(), userList.get(i).getRole());
+				}
+            	System.out.println("\n");
+            }
+            else if (add){
+            	System.out.println("Add new user");
+            }
+            else if (exit){
+            	System.exit(0);
+            }
+            else if (edit != null){
+            	System.out.println("eDIT");
+            }
+            else if (delete != null){
+            	System.out.println("DELETE");
+            }
+		}
+        in.close();
+    }
+
+	public void printUsage() {
+		System.err.println("- Invalid argument given!");
+    	System.err.println("Usage: java -jar server.jar [option]");
+        System.err.println("Options:");
+        parser.printUsage(System.err);
+		
+	}
+}

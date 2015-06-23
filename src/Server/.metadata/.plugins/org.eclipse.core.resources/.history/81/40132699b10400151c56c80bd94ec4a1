@@ -1,0 +1,193 @@
+package controller;
+import model.WeatherStationModel;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+/**
+ * Device configuration
+ *
+ * @author
+ *      T13_SWP5 (t13swp5@gmail.com)
+ */
+public class Config {
+	private static DbController dbController = new DbController();
+	ArrayList<WeatherStationModel> wsList = new ArrayList<WeatherStationModel>();
+
+    @Option(name="-HELP" , usage="Print this message", forbids={"-EDIT", "-DELETE", "-LIST", "-EXIT"})
+    private boolean help;
+    
+    @Option(name="-EDIT", metaVar="<device_id>", usage="Delete device with specific ID", forbids={"-HELP", "-DELETE", "-LIST", "-EXIT"})
+    private Integer edit;
+    
+    @Option(name="-DELETE", metaVar="<device_id>", usage="Edit device with specific ID", forbids={"-EDIT", "-HELP", "-LIST", "-EXIT"})
+    private String delete;
+    
+    @Option(name="-LIST", usage="List all devices", forbids={"-EDIT", "-DELETE", "-HELP", "-EXIT"})
+    private boolean list;
+    
+    @Option(name="-EXIT" , usage="Exit the program", forbids={"-EDIT", "-DELETE", "-LIST", "-HELP"})
+    private boolean exit;
+
+    // receives other command line parameters than options
+    @Argument
+    private List<String> arguments = new ArrayList<String>();
+    
+    CmdLineParser parser = new CmdLineParser(this);
+    Scanner in = new Scanner(System.in);
+    public void doMain() throws IOException {
+    	dbInit();
+    	System.out.println("");
+    	System.out.println("==================== Device Settings ====================\n");
+    	System.out.println("Usage: [option]");
+    	parser.printUsage(System.out);
+    	String userInput = "";
+        parser = new CmdLineParser(this);
+        while(!userInput.equals("-EXIT")) {
+        	System.out.print("> ");
+        	userInput = in.nextLine();
+            String[] userArgs = userInput.split("\\s+");
+
+            try {
+                parser.parseArgument(userArgs);
+                
+                if(!arguments.isEmpty()) {
+                	printUsage();
+                }
+                else if( help ) {
+                	helpMenu();
+                } 
+                else if (list){
+                	listMenu();
+                }
+                else if (exit){
+                	System.exit(0);
+                }
+                else if (edit != null){
+                	editMenu();
+                }
+                else if (delete != null){
+                	deleteMenu();
+                }
+
+            } catch( CmdLineException e ) {
+                System.err.println(e.getMessage());
+                System.err.println("Usage: [option]");
+                System.err.println("Options:");
+                parser.printUsage(System.err);
+                System.err.println();
+
+            } 
+            
+            help = false;
+            list = false;
+            edit = null;
+            delete = null;
+            arguments.clear();
+		}
+        in.close();
+    }
+    public void helpMenu(){
+    	System.out.println("Usage: [option]");
+    	System.out.println("Options:");
+        parser.printUsage(System.out);
+    }
+    
+    public void listMenu(){
+    	System.out.println("\nID\t Name\t\t IP\t\tPort\tSensor\tInterval[ms]");
+    	System.out.println("===================================================================");
+    	
+    	try {
+			wsList = dbController.allWS();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	String format = "%-8s%-13s%-19s%-9s%-12s%-5s%n";
+    	for (int i = 0; i < wsList.size(); i++) {
+    		System.out.printf(format, wsList.get(i).getId(), wsList.get(i).getName(), wsList.get(i).getIp(), wsList.get(i).getPort(), wsList.get(i).getSensor(), wsList.get(i).getInterval());
+		}
+    	System.out.println("\n");
+    }
+
+    public void editMenu(){
+		System.out.print("\nNew name: ");
+    	String name = in.nextLine();
+    	System.out.print("\nNew IP address: ");
+    	String ip = in.nextLine();
+    	System.out.print("New port: ");
+    	String port = in.nextLine();
+		try {
+			Integer intPort = Integer.valueOf(port);
+			boolean intervalOk = false;
+			while(!intervalOk){
+				//TODO INTERVAL
+				System.out.print("New interval[100-60000]: ");
+		    	String interval = in.nextLine();
+		    	try {
+					Integer intInterval = Integer.valueOf(interval);
+					if (intInterval < 1 || intInterval > 60) {
+						System.out.println("\"" + interval +"\"" +" is not a valid value!");
+					}
+					else{
+						intervalOk = true;
+						System.out.print("New sensor description: ");
+				    	String sensor = in.nextLine();
+				    	try {
+							String result = dbController.editWs(edit, name, ip, intPort, intInterval, sensor);
+							System.out.println(result);
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+				} catch (Exception e) {
+					System.out.println("\"" + interval +"\"" +" is not a valid value!");
+				}
+			}
+		} catch (NumberFormatException e1) {
+			System.out.println("\"" + port +"\"" +" is not a valid value!");
+		}
+    }
+    
+    public void deleteMenu(){
+    	int id = -1;
+    	try {
+			id = Integer.valueOf(delete);
+				try {
+					boolean result = dbController.deleteWs(id);
+					if(result){
+						System.out.println("Weather Station deleted successfully!\n");
+					}
+					else {
+						System.out.println("Weather Station does not exist!\n");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+		} catch (NumberFormatException e) {
+			System.out.println("\"" + delete +"\"" +" is not valid value!");
+		}
+    }
+    public void dbInit(){
+    	try {
+			dbController.dbInit();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
+    
+	public void printUsage() {
+		System.err.println("- Invalid argument given!");
+    	System.err.println("Usage: [option]");
+        System.err.println("Options:");
+        parser.printUsage(System.err);
+		
+	}
+}

@@ -1,0 +1,331 @@
+package controller;
+
+
+import java.sql.SQLException;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.ResourceBundle;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
+import javafx.util.Callback;
+import model.WeatherStationModel;
+
+public class EditWeatherStationController {
+
+	private DbController dbController = new DbController();
+	private NewWeatherStationController newWeatherStationController = new NewWeatherStationController();
+	private Integer selctedWs = 0;
+	private Integer roleUser = 0;
+	private Locale locale;
+	private ResourceBundle bundle;
+
+ 	@FXML
+    private TextField txtIPAdress;	
+    @FXML
+    private TextField txtPort;
+    @FXML
+    private Button btnConfirm;	
+    @FXML
+    private Button btnCancel;
+    @FXML
+    private TextField txtWsName;
+	@FXML
+    private TableView<WeatherStationModel> tableWS;
+	@FXML
+    private TableColumn<WeatherStationModel,String> tableColName;
+	@FXML
+    private TableColumn<WeatherStationModel,String> tableColIp;
+	@FXML
+	private TableColumn<WeatherStationModel,String> tableColPort;
+	@FXML
+	private TableColumn<WeatherStationModel, Boolean> tableColDelete;
+	@FXML
+	private AnchorPane paneEditTitle;
+	@FXML
+	private ImageView imageEdit;
+	@FXML
+	private Label lblEditTitle;
+	@FXML
+	private Pane paneAdminSlider;
+	@FXML
+	private Slider freqSlider;
+	@FXML
+	private Label lblFreq;
+	@FXML
+	private Label lblRealTimeFreq;
+	@FXML
+	private Label lblWsName;
+	@FXML
+	private Label lblIpAddress;
+    
+	public void initialize() throws SQLException {
+		
+		locale = new Locale(Language.getLanguage());
+    	bundle = ResourceBundle.getBundle("language.lang", locale);
+		lblWsName.setText(bundle.getString("lblEditWsName"));
+		lblIpAddress.setText(bundle.getString("ipColumn"));
+		lblRealTimeFreq.setText(bundle.getString("lblEditFreq"));
+		btnConfirm.setText(bundle.getString("btnEditSave"));
+		btnCancel.setText(bundle.getString("btnCancel"));
+		
+		if(LogInController.getUserAdmin().equals(1)){
+			paneAdminSlider.setVisible(true);
+			freqSlider.setDisable(true);
+			freqSlider.setMin(5);
+			freqSlider.setMax(59);
+			freqSlider.setValue(15);
+			freqSlider.setShowTickMarks(true);
+	        lblFreq.setText(Double.toString(freqSlider.getValue()));
+	        freqSlider.valueProperty().addListener(new ChangeListener<Number>() {
+	                public void changed(ObservableValue<? extends Number> ov,
+	                    Number old_val, Number new_val) {
+	                        lblFreq.setText(String.format("%.0f" + " sec", new_val));
+	                }
+	            });
+		} else{
+			paneAdminSlider.setVisible(false);
+		}
+		
+		roleUser = dbController.roleUser(LogInController.logUserId);
+		System.out.println(roleUser);
+		
+    	Image image = new Image("/img/editIcon.png");
+    	imageEdit.setImage(image);
+    	imageEdit.setFitWidth(100);
+    	imageEdit.setPreserveRatio(true);
+    	imageEdit.setSmooth(true);
+    	imageEdit.setCache(true);
+    	imageEdit.setLayoutX(35);
+    	imageEdit.setLayoutY(5);
+    	lblEditTitle.setText(bundle.getString("titleTextEdit"));
+    	paneEditTitle.setStyle(
+    			"-fx-background-color: #CDDC39; " +
+                "-fx-effect: dropshadow(three-pass-box, #8d8d8d, 10, 0, 0, 0);");
+    	
+		if(selctedWs.equals(0)){
+			txtWsName.setDisable(true);
+			txtPort.setDisable(true);
+			txtIPAdress.setDisable(true);
+		}
+		
+		tableColName.setText(bundle.getString("columnName"));
+		tableColIp.setText(bundle.getString("ipColumn"));
+    	tableColDelete.setText(bundle.getString("columnDelete"));
+    	
+		tableColName.setText(bundle.getString("columnName"));
+    	tableColDelete.setText(bundle.getString("columnDelete"));
+    	tableColName.setCellValueFactory(new PropertyValueFactory<WeatherStationModel, String>("name"));
+    	tableColIp.setCellValueFactory(new PropertyValueFactory<WeatherStationModel, String>("ip"));
+        tableColPort.setCellValueFactory(new PropertyValueFactory<WeatherStationModel, String>("port"));
+        tableColDelete.setSortable(false);
+        
+        tableColDelete.setSortable(false);
+        tableColDelete.setCellValueFactory(
+                new Callback<TableColumn.CellDataFeatures<WeatherStationModel, Boolean>, 
+                ObservableValue<Boolean>>() {
+ 
+            @Override
+            public ObservableValue<Boolean> call(TableColumn.CellDataFeatures<WeatherStationModel, Boolean> p) {
+                return new SimpleBooleanProperty(p.getValue() != null);
+            }
+        });
+        tableColDelete.setCellFactory(
+                new Callback<TableColumn<WeatherStationModel, Boolean>, TableCell<WeatherStationModel, Boolean>>() {
+ 
+            @Override
+            public TableCell<WeatherStationModel, Boolean> call(TableColumn<WeatherStationModel, Boolean> p) {
+                return new ButtonCell(tableWS);
+            }
+         
+        });
+        tableWS.setItems(dbController.allWS(LogInController.getLogUserId()));
+        tableColIp.setStyle("-fx-alignment: CENTER;");
+        tableColName.setStyle("-fx-alignment: CENTER;");
+        tableColPort.setStyle("-fx-alignment: CENTER;");
+        tableColDelete.setStyle("-fx-alignment: CENTER;");
+    }
+	
+    private class ButtonCell extends TableCell<WeatherStationModel, Boolean> {
+    	final Button cellButton = new Button();
+         
+        ButtonCell(@SuppressWarnings("rawtypes") final TableView tableWs){
+             
+            cellButton.setOnAction(new EventHandler<ActionEvent>(){
+ 
+                @Override
+                public void handle(ActionEvent t) {
+                    int selectdIndex = getTableRow().getIndex(); 
+                    WeatherStationModel selectedWeatherStationModel = (WeatherStationModel)tableWs.getItems().get(selectdIndex);
+                     try {
+                    	 if(selectedWeatherStationModel.getRole() == roleUser || roleUser == 1){
+                        	 Alert alert = new Alert(AlertType.CONFIRMATION);
+                        	 alert.setTitle(bundle.getString("columnDelete"));
+                        	 alert.setContentText(bundle.getString("confirmation"));
+                        	 ButtonType buttonTypeOne = new ButtonType(bundle.getString("yes"));
+                        	 ButtonType buttonTypeTwo = new ButtonType(bundle.getString("no"));
+                        	 ButtonType buttonTypeCancel = new ButtonType(bundle.getString("btnCancel"), ButtonData.CANCEL_CLOSE);
+
+                        	 alert.getButtonTypes().setAll(buttonTypeOne, buttonTypeTwo, buttonTypeCancel);
+
+                        	 Optional<ButtonType> result = alert.showAndWait();
+                        	 if (result.get() == buttonTypeOne){
+                        		 if(dbController.deleteWs(selectdIndex)){
+                            		 dbController.allWS(LogInController.getLogUserId());
+                            	 }
+                        	 } else if (result.get() == buttonTypeTwo) {
+                        	     alert.close();
+                        	 } else {
+                        		 alert.close();
+                        	 }
+                    	 }
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+                }
+            });
+        }
+        
+        @Override
+        protected void updateItem(Boolean t, boolean empty) {
+            super.updateItem(t, empty);
+            if(!empty){
+            		if(tableWS.getItems().get(super.getIndex()).getRole() == LogInController.getUserAdmin()){
+                    	Image image = new Image(getClass().getResourceAsStream("/img/deleteIcon.png"));
+                    	cellButton.setGraphic(new ImageView(image));
+                    	cellButton.setStyle("-fx-background-color: transparent;");
+                        setGraphic(cellButton);
+            		} else{
+            			Image image = new Image(getClass().getResourceAsStream("/img/disableDeleteIcon.png"));
+                    	cellButton.setGraphic(new ImageView(image));
+                    	cellButton.setStyle("-fx-background-color: transparent;");
+                        setGraphic(cellButton);
+            		}
+            }
+        }
+    }
+
+    @FXML
+    private void editWs(ActionEvent event) throws SQLException {
+    	Object source = event.getSource();
+    	newWeatherStationController.IPAddressValidator();
+    	@SuppressWarnings("unused")
+		int port = 0;
+    	String result[] = {""};
+		if (source instanceof Button) {
+			if(txtWsName.getText().isEmpty() || txtIPAdress.getText().isEmpty() || txtPort.getText().isEmpty()){
+           	 	errorMessage(bundle.getString("warning"),bundle.getString("errorEmptyFields"),12);
+			}else if (newWeatherStationController.validate(txtIPAdress.getText()) == false) {
+           	 	errorMessage(bundle.getString("titleAlert"),bundle.getString("ipAdressFormat"),0);
+			    txtIPAdress.requestFocus();
+			}else if (txtWsName.lengthProperty().getValue() > 20) {
+			    errorMessage(bundle.getString("titleAlert"),bundle.getString("errorWsNamelenght") + " " + txtWsName.lengthProperty().getValue(),0);
+			    txtWsName.setText("");
+			    txtWsName.requestFocus();
+			}else {
+				try {
+					port = Integer.valueOf(txtPort.getText());
+					try {
+						result = dbController.editWs(selctedWs, txtWsName.getText(), txtIPAdress.getText(), Integer.valueOf(txtPort.getText()));
+					} catch (Exception e) {
+					    errorMessage(bundle.getString("titleAlert"),bundle.getString("erroNameOrIpEdit"),0);
+					}
+				} catch (Exception e) {
+				    errorMessage(bundle.getString("titleAlert"),bundle.getString("portNumber"),0);
+				}
+			}
+			if(result[0] == "true"){ 
+			    errorMessage(bundle.getString("alertTitleSuccess"),bundle.getString("EditWSAdd"),1);
+			    txtWsName.setText("");
+			    txtIPAdress.setText("");
+			    txtPort.setText("");
+			    selctedWs = 0;
+			    initialize();
+			}
+		}
+    }
+    
+    @FXML
+    private void getSelectedWs() throws SQLException{
+    	try {
+    		if(tableWS.getSelectionModel().getSelectedItem() != null){
+        	    WeatherStationModel weatherStationModel = tableWS.getSelectionModel().getSelectedItem();
+        	    if(weatherStationModel.getRole() == roleUser){
+        	    	freqSlider.setDisable(false);
+            		txtIPAdress.setDisable(false);
+            		txtPort.setDisable(false);
+            		txtWsName.setDisable(false);
+            	    selctedWs = weatherStationModel.getId();
+            	    txtWsName.setText(weatherStationModel.getName());
+            	    txtIPAdress.setText(weatherStationModel.getIp());
+            	    txtPort.setText(String.valueOf(weatherStationModel.getPort()));
+        	    }else{
+        	    	freqSlider.setDisable(true);
+        	    	txtIPAdress.setDisable(true);
+            		txtIPAdress.setText("");
+        	    	txtPort.setDisable(true);
+        	    	txtPort.setText("");
+            		txtWsName.setDisable(true);
+            		txtWsName.setText("");
+        	    }
+    		}
+		} catch (Exception e) {
+			System.out.print("\nAn error hass occurred on table view selection edit");
+			selctedWs = 0;
+			initialize();
+		}
+    }
+    
+    private void errorMessage(String title,String context, Integer id){
+    	if(id == 0){
+    		Alert alert = new Alert(AlertType.ERROR); 
+    	    alert.setTitle(title);
+    	    alert.setHeaderText(null);
+    	    alert.setContentText(context);
+    	    alert.showAndWait();
+    	}else if(id == 1){
+    		Alert alert = new Alert(AlertType.INFORMATION); 
+    	    alert.setTitle(title);
+    	    alert.setHeaderText(null);
+    	    alert.setContentText(context);
+    	    alert.showAndWait();
+    	}else if(id == 2){
+    		Alert alert = new Alert(AlertType.CONFIRMATION); 
+    	    alert.setTitle(title);
+    	    alert.setHeaderText(null);
+    	    alert.setContentText(context);
+    	    alert.showAndWait();
+    	}else {
+    		Alert alert = new Alert(AlertType.WARNING); 
+    	    alert.setTitle(title);
+    	    alert.setHeaderText(null);
+    	    alert.setContentText(context);
+    	    alert.showAndWait();
+    	}
+	}
+
+    @FXML
+    private void cancel(ActionEvent event){
+    	((Node)(event.getSource())).getScene().getWindow().hide();
+    }
+}

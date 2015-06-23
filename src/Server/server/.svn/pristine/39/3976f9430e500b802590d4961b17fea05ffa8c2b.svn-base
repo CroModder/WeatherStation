@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.shape.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="670.0" prefWidth="1095.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.GUI">
+   <children>
+      <Pane fx:id="tempPane" layoutY="73.0" prefHeight="131.0" prefWidth="782.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="313.0">
+         <children>
+            <Label layoutX="14.0" layoutY="9.0" prefHeight="113.0" prefWidth="213.0" text="Temperatur: ">
+               <font>
+                  <Font name="Arial" size="37.0" />
+               </font>
+            </Label>
+            <ImageView fx:id="imageView" fitHeight="495.0" fitWidth="666.0" layoutX="391.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true" />
+         </children></Pane>
+      <Pane fx:id="airPane" layoutY="208.0" prefHeight="131.0" prefWidth="782.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="313.0">
+         <children>
+            <Label layoutX="14.0" layoutY="9.0" prefHeight="113.0" prefWidth="213.0" text="Luftdruck:">
+               <font>
+                  <Font name="Arial" size="37.0" />
+               </font>
+            </Label>
+            <ImageView fitHeight="473.0" fitWidth="568.0" layoutX="433.0" layoutY="-101.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../img/WeatherStationLIVE.png" />
+               </image>
+            </ImageView>
+         </children></Pane>
+      <Pane fx:id="movePane" layoutY="343.0" prefHeight="131.0" prefWidth="782.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="313.0">
+         <children>
+            <Label layoutX="208.0" layoutY="-16.0" prefHeight="59.0" prefWidth="74.0" text="hPa">
+               <font>
+                  <Font name="Arial" size="37.0" />
+               </font>
+            </Label>
+            <Label layoutX="14.0" layoutY="9.0" prefHeight="113.0" prefWidth="213.0" text="Bewegung:">
+               <font>
+                  <Font name="Arial" size="37.0" />
+               </font>
+            </Label>
+            <Label layoutX="202.0" layoutY="89.0" prefHeight="33.0" prefWidth="18.0" text="o">
+               <font>
+                  <Font name="Arial" size="19.0" />
+               </font>
+            </Label>
+         </children></Pane>
+      <Pane fx:id="magPane" layoutY="478.0" prefHeight="131.0" prefWidth="782.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="313.0">
+         <children>
+            <Label layoutX="14.0" layoutY="9.0" prefHeight="113.0" prefWidth="213.0" text="Magnetfeld:">
+               <font>
+                  <Font name="Arial" size="37.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER" layoutX="55.0" layoutY="117.0" prefHeight="59.0" prefWidth="74.0" text="mx:">
+               <font>
+                  <Font name="Arial" size="37.0" />
+               </font>
+            </Label>
+         </children></Pane>
+      <Label layoutX="180.0" layoutY="191.0" prefHeight="59.0" prefWidth="30.0" text="C">
+         <font>
+            <Font name="Arial" size="37.0" />
+         </font>
+      </Label>
+      <Label layoutX="170.0" layoutY="187.0" prefHeight="33.0" prefWidth="18.0" text="o">
+         <font>
+            <Font name="Arial" size="19.0" />
+         </font>
+      </Label>
+      <Label alignment="CENTER" layoutX="423.0" layoutY="595.0" prefHeight="59.0" prefWidth="74.0" text="my:">
+         <font>
+            <Font name="Arial" size="37.0" />
+         </font>
+      </Label>
+      <Label alignment="CENTER" layoutX="761.0" layoutY="594.0" prefHeight="59.0" prefWidth="74.0" text="mz:">
+         <font>
+            <Font name="Arial" size="37.0" />
+         </font>
+      </Label>
+      <Label alignment="CENTER" layoutX="261.0" layoutY="594.0" prefHeight="59.0" prefWidth="74.0" text="μT">
+         <font>
+            <Font name="Arial" size="37.0" />
+         </font>
+      </Label>
+      <Label alignment="CENTER" layoutX="628.0" layoutY="597.0" prefHeight="59.0" prefWidth="74.0" text="μT">
+         <font>
+            <Font name="Arial" size="37.0" />
+         </font>
+      </Label>
+      <Label alignment="CENTER" layoutX="964.0" layoutY="595.0" prefHeight="59.0" prefWidth="74.0" text="μT">
+         <font>
+            <Font name="Arial" size="37.0" />
+         </font>
+      </Label>
+      <Pane fx:id="titlePane" layoutX="-1.0" layoutY="-1.0" prefHeight="105.0" prefWidth="1098.0" AnchorPane.leftAnchor="-1.0" AnchorPane.rightAnchor="-2.0" />
+   </children>
+</AnchorPane>

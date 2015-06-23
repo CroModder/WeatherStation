@@ -1,0 +1,222 @@
+package controller;
+import model.UsersModel;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+
+/**
+ * User configuration
+ *
+ * @author
+ *      T13_SWP5 (t13swp5@gmail.com)
+ */
+public class Users {
+	private static DbController dbController = new DbController();
+	ArrayList<UsersModel> userList = new ArrayList<UsersModel>();
+
+    @Option(name="-HELP" , usage="Print this message", forbids={"-ADD", "-EDIT", "-DELETE", "-LIST", "-EXIT"})
+    private boolean help;
+
+    @Option(name="-ADD", usage="Add new user", forbids={"-HELP", "-EDIT", "-DELETE", "-LIST", "-EXIT"})
+    private boolean add;
+    
+    @Option(name="-EDIT", metaVar="<device_id>", usage="Delete user with specific ID", forbids={"-ADD", "-HELP", "-DELETE", "-LIST", "-EXIT"})
+    private String edit;
+    
+    @Option(name="-DELETE", metaVar="<device_id>", usage="Edit user with specific ID", forbids={"-ADD", "-EDIT", "-HELP", "-LIST", "-EXIT"})
+    private String delete;
+    
+    @Option(name="-LIST", usage="List all devices", forbids={"-ADD", "-EDIT", "-DELETE", "-HELP", "-EXIT"})
+    private boolean list;
+    
+    @Option(name="-EXIT" , usage="Exit the program", forbids={"-ADD", "-EDIT", "-DELETE", "-LIST", "-HELP"})
+    private boolean exit;
+
+    // receives other command line parameters than options
+    @Argument
+    private List<String> arguments = new ArrayList<String>();
+    
+    CmdLineParser parser = new CmdLineParser(this);
+    Scanner in = new Scanner(System.in);
+    public void doMain() throws IOException {
+    	dbController.dbInit();
+    	System.out.println("");
+    	System.out.println("==================== User Settings ====================\n");
+    	System.out.println("Usage: [option]");
+    	parser.printUsage(System.out);
+    	String userInput = "";
+        parser = new CmdLineParser(this);
+        while(!userInput.equals("-EXIT")) {
+        	System.out.print("> ");
+        	userInput = in.nextLine();
+            String[] userArgs = userInput.split("\\s+");
+
+            try {
+                parser.parseArgument(userArgs);
+                
+                if(!arguments.isEmpty()) {
+                	printUsage();
+                }
+                else if( help ) {
+                	helpMenu();
+                } 
+                else if (list){
+                	listMenu();
+                }
+                else if (add){
+                	addMenu();
+                	
+                }
+                else if (exit){
+                	System.exit(0);
+                }
+                else if (edit != null){
+                	editMenu();
+                }
+                else if (delete != null){
+                	deleteMenu();
+                }
+
+            } catch( CmdLineException e ) {
+                System.err.println(e.getMessage());
+                System.err.println("Usage: [option]");
+                System.err.println("Options:");
+                parser.printUsage(System.err);
+                System.err.println();
+
+            } 
+            
+            help = false;
+            list = false;
+            add = false;
+            edit = null;
+            delete = null;
+            arguments.clear();
+		}
+        in.close();
+    }
+    public void helpMenu(){
+    	System.out.println("Usage: [option]");
+    	System.out.println("Options:");
+        parser.printUsage(System.out);
+    }
+    
+    public void listMenu(){
+    	System.out.println("\nID\tName\t\tE-mail\t\t\t\tRole");
+    	System.out.println("================================================================");
+    	
+    	try {
+			userList = dbController.getUsers();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    	String format = "%-8s%-10s%-32s%s%n";
+    	for (int i = 0; i < userList.size(); i++) {
+    		String role = "";
+    		if (userList.get(i).getRole() == 1) {
+				role = "Administrator";
+			}
+    		else {
+    			role = "User";
+    		}
+    		System.out.printf(format, userList.get(i).getId(), userList.get(i).getName(),userList.get(i).getEmail(), role);
+		}
+    	System.out.println("\n");
+    }
+    
+    public void addMenu() {
+    	System.out.print("\nName: ");
+    	String name = in.nextLine();
+    	System.out.print("\nPassword: ");
+    	String password = in.nextLine();
+    	System.out.print("\nE-mail: ");
+    	String email = in.nextLine();
+    	try {
+			dbController.register(name, password, email);
+			System.out.println("User added successfully!\n");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
+    
+    public void editMenu(){
+    	int id = -1;
+    	try {
+			id = Integer.valueOf(edit);
+			if (id != 1) {
+				System.out.print("\nNew name: ");
+	        	String name = in.nextLine();
+	        	System.out.print("New role <1-administrator | 2- general user>: ");
+	        	String role = in.nextLine();
+	        	int intRole = -1;
+				try {
+					intRole = Integer.valueOf(role);
+					if (intRole==1 || intRole==2) {
+						try {
+							String[] result = dbController.editUser(name, intRole, id);
+							if(result[0].equals("true")){
+								System.out.println("User edited successfully!\n");
+							}
+							else {
+								System.out.println("User does not exist!\n");
+							}
+						} catch (SQLException e) {
+							e.printStackTrace();
+						}
+					}
+					else{
+						System.out.println("Role input is not valid!");
+					}
+				} catch (NumberFormatException e1) {
+					System.out.println("\"" + role +"\"" +" is not a valid value!");
+				}
+    		}
+			else {
+				System.out.println("Changing \"Admin\" is not allowed!");
+			}
+		} catch (NumberFormatException e2) {
+			System.out.println("\"" + edit +"\"" +" is not a valid value!");
+		}
+    }
+    
+    public void deleteMenu(){
+    	int id = -1;
+    	try {
+			id = Integer.valueOf(delete);
+			if (id != 1) {
+				try {
+					boolean result = dbController.deleteUsers(id);
+					if(result){
+						System.out.println("User deleted successfully!\n");
+					}
+					else {
+						System.out.println("User does not exist!\n");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+			else {
+				System.out.println("Deleting  \"Admin\" is not allowed!");
+			}
+		} catch (NumberFormatException e) {
+			System.out.println("\"" + delete +"\"" +" is not a valid value!");
+		}
+    }
+    
+	public void printUsage() {
+		System.err.println("- Invalid argument given!");
+    	System.err.println("Usage: [option]");
+        System.err.println("Options:");
+        parser.printUsage(System.err);
+		
+	}
+}

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.image.*?>
+<?import javafx.scene.*?>
+<?import javafx.embed.swing.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane prefHeight="497.0" prefWidth="460.0" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.RecordController">
+   <center>
+      <BorderPane prefHeight="392.0" prefWidth="460.0" BorderPane.alignment="CENTER">
+         <top>
+            <Pane prefHeight="52.0" prefWidth="373.0" BorderPane.alignment="CENTER">
+               <children>
+                  <DatePicker fx:id="dateBegin" layoutX="57.0" layoutY="13.0" prefHeight="26.0" prefWidth="154.0" />
+                  <DatePicker fx:id="dateEnd" layoutX="292.0" layoutY="13.0" prefHeight="26.0" prefWidth="154.0" />
+                  <Label layoutX="10.0" layoutY="18.0" text="Begin:" />
+                  <Label layoutX="252.0" layoutY="18.0" text="End:" />
+                  <Separator layoutX="252.0" layoutY="51.0" prefWidth="200.0" />
+                  <Separator layoutX="7.0" layoutY="51.0" prefWidth="300.0" />
+               </children>
+            </Pane>
+         </top>
+         <bottom>
+            <Pane prefHeight="54.0" prefWidth="460.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button fx:id="btnCancel" layoutX="397.0" layoutY="16.0" mnemonicParsing="false" onAction="#cancel" text="Cancel" />
+                  <Button fx:id="btnOk" layoutX="322.0" layoutY="16.0" mnemonicParsing="false" onAction="#confirm" prefHeight="26.0" prefWidth="61.0" text="Ok" />
+               </children></Pane>
+         </bottom>
+         <center>
+            <Pane prefHeight="202.0" prefWidth="199.0" BorderPane.alignment="CENTER">
+               <children>
+                  <RadioButton fx:id="radioMinutes" layoutX="32.0" layoutY="14.0" mnemonicParsing="false" onAction="#minutesSlider" text="Minutes" />
+                  <RadioButton fx:id="radioHours" layoutX="141.0" layoutY="14.0" mnemonicParsing="false" onAction="#hoursSlider" text="Hours" />
+                  <Slider fx:id="sliderFreq" layoutX="35.0" layoutY="53.0" prefHeight="15.0" prefWidth="119.0" />
+                  <Label fx:id="lblFreq" alignment="CENTER" contentDisplay="CENTER" layoutX="158.0" layoutY="52.0" prefHeight="16.0" prefWidth="71.0" text="Label" />
+                  <Separator layoutX="14.0" layoutY="7.0" orientation="VERTICAL" prefHeight="265.0" />
+                  <Separator layoutX="115.0" layoutY="9.0" orientation="VERTICAL" prefHeight="25.0" />
+                  <TreeTableView fx:id="treeSelection" layoutX="34.0" layoutY="98.0" onMouseClicked="#getSelectedData" prefHeight="174.0" prefWidth="196.0" />
+               </children>
+            </Pane>
+         </center>
+         <left>
+            <Pane prefHeight="201.0" prefWidth="219.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Label layoutX="11.0" layoutY="15.0" prefHeight="17.0" prefWidth="36.0" text="Ws:" />
+                  <ComboBox fx:id="comboButtonWs" layoutX="53.0" layoutY="12.0" prefWidth="150.0" />
+                  <CheckBox fx:id="checkTemp" layoutX="20.0" layoutY="60.0" mnemonicParsing="false" text="Temperature" />
+                  <CheckBox fx:id="checkAir" layoutX="118.0" layoutY="60.0" mnemonicParsing="false" text="Air pressure" />
+                  <CheckBox fx:id="checkMag" layoutX="19.0" layoutY="105.0" mnemonicParsing="false" text="Magnetic" />
+                  <CheckBox fx:id="checkMov" layoutX="118.0" layoutY="105.0" mnemonicParsing="false" text="Movement" />
+                  <Button fx:id="btnAddCheck" layoutX="108.0" layoutY="146.0" mnemonicParsing="false" onAction="#addSelection" prefHeight="25.0" prefWidth="95.0" text="Add selection" />
+                  <Button fx:id="btnClear" layoutX="108.0" layoutY="186.0" mnemonicParsing="false" onAction="#clear" prefHeight="25.0" prefWidth="95.0" text="Clear selection" />
+               </children>
+            </Pane>
+         </left>
+      </BorderPane>
+   </center>
+   <top>
+      <Pane fx:id="paneRecordingTitle" prefHeight="120.0" prefWidth="460.0" BorderPane.alignment="CENTER">
+         <children>
+            <ImageView fx:id="imageRecord" fitHeight="94.0" fitWidth="118.0" layoutX="74.0" layoutY="2.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="lblRecordingTitle" alignment="TOP_LEFT" layoutX="152.0" layoutY="30.0" prefHeight="64.0" prefWidth="303.0">
+               <font>
+                  <Font size="16.0" />
+               </font></Label>
+         </children></Pane>
+   </top>
+</BorderPane>
